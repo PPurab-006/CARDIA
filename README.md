@@ -109,7 +109,7 @@ Open your browser to: **`http://localhost:5173`**
 
 ## 7. Automated Test Suite
 
-Run the full backend test suite (23 tests verifying anti-leakage rules, API contracts, constant feature dropping, and model integrity):
+Run the full backend test suite (33 tests verifying anti-leakage rules, age boundary policies, API contracts, constant feature dropping, and model integrity):
 
 ```bash
 PYTHONPATH=. .venv/bin/pytest -v
@@ -132,8 +132,10 @@ cd frontend && npm run build
 │   ├── processed/            # Cleaned Alizadeh-Sani CSV (303 rows)
 │   └── raw/                  # Original UCI archive
 ├── docs/
+│   ├── CARDIA_Technical_Report.pdf # Final technical report (5 pages)
+│   ├── CARDIA_Technical_Report.md  # Editable Markdown source of technical report
 │   ├── API_CONTRACT.md       # OpenAPI/REST endpoint specifications
-│   └── LEAKAGE_AUDIT.md      # Comprehensive forensic leakage audit
+│   └── LEAKAGE_AUDIT.md      # Forensic data leakage audit
 ├── frontend/
 │   ├── src/
 │   │   ├── components/

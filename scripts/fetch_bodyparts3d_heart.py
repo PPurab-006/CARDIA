@@ -267,7 +267,7 @@ def main():
     write_obj(os.path.join(OUTPUT_DIR, "lcx.obj"), lcx_verts_t, lcx_faces, "LCX_CoronaryArtery")
     write_obj(os.path.join(OUTPUT_DIR, "rca.obj"), rca_verts_t, rca_faces, "RCA_CoronaryArtery")
     
-    # Export optimized Three.js BufferGeometry JSON files (loads seamlessly via fetch in React)
+    # Export optimized Three.js BufferGeometry JSON files (loads directly via fetch in React)
     write_buffer_geometry_json(os.path.join(OUTPUT_DIR, "heart_myocardium.json"), heart_verts_t, heart_faces, "HeartMyocardium")
     write_buffer_geometry_json(os.path.join(OUTPUT_DIR, "lad.json"), lad_verts_t, lad_faces, "LAD_CoronaryArtery")
     write_buffer_geometry_json(os.path.join(OUTPUT_DIR, "lcx.json"), lcx_verts_t, lcx_faces, "LCX_CoronaryArtery")

@@ -1,0 +1,901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>CARDIA Technical Report - Multimodal AI Hackathon 2026</title>
+<style>
+  @page {
+    size: letter;
+    margin: 12mm 14mm 12mm 14mm;
+  }
+  * {
+    box-sizing: border-box;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1a1a1a;
+    background-color: #ffffff;
+    font-size: 8.5pt;
+    line-height: 1.32;
+    margin: 0;
+    padding: 0;
+  }
+  .page {
+    page-break-after: always;
+    height: 254mm;
+    position: relative;
+    box-sizing: border-box;
+    padding-bottom: 12mm;
+  }
+  .page:last-child {
+    page-break-after: avoid;
+  }
+  
+  /* Running Header & Footer */
+  .page-header {
+    border-bottom: 1.5px solid #0f172a;
+    padding-bottom: 3px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .page-header .brand {
+    font-size: 8pt;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #0f172a;
+  }
+  .page-header .doc-tag {
+    font-size: 7.5pt;
+    color: #64748b;
+  }
+  
+  .page-footer {
+    position: absolute;
+    bottom: 2mm;
+    left: 0;
+    right: 0;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 3px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 7pt;
+    color: #64748b;
+  }
+
+  /* Typography */
+  h1 {
+    font-size: 14.5pt;
+    font-weight: 800;
+    color: #0f172a;
+    margin: 0 0 2px 0;
+    line-height: 1.15;
+    letter-spacing: -0.3px;
+  }
+  .subtitle {
+    font-size: 8.75pt;
+    font-weight: 500;
+    color: #334155;
+    margin: 0 0 6px 0;
+  }
+  h2 {
+    font-size: 9.75pt;
+    font-weight: 700;
+    color: #0f172a;
+    border-bottom: 1px solid #cbd5e1;
+    padding-bottom: 2px;
+    margin: 8px 0 4px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  h3 {
+    font-size: 8.5pt;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 5px 0 2px 0;
+  }
+  p {
+    margin: 0 0 4px 0;
+    text-align: justify;
+  }
+  ul, ol {
+    margin: 0 0 4px 0;
+    padding-left: 14px;
+  }
+  li {
+    margin-bottom: 1.5px;
+  }
+  strong {
+    font-weight: 600;
+    color: #0f172a;
+  }
+
+  /* Meta Banner */
+  .meta-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 6px;
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 4px;
+    padding: 5px 8px;
+    margin-bottom: 6px;
+    font-size: 7.5pt;
+  }
+  .meta-item span.label {
+    color: #64748b;
+    font-weight: 500;
+    display: block;
+    text-transform: uppercase;
+    font-size: 6.5pt;
+    letter-spacing: 0.3px;
+  }
+  .meta-item span.val {
+    color: #0f172a;
+    font-weight: 600;
+  }
+
+  /* Callout / Notice Box */
+  .notice-box {
+    background-color: #f8fafc;
+    border-left: 3px solid #2563eb;
+    padding: 4px 7px;
+    margin: 4px 0 5px 0;
+    font-size: 7.75pt;
+    line-height: 1.28;
+    color: #1e293b;
+    border-radius: 0 3px 3px 0;
+  }
+  .notice-box.alert {
+    border-left-color: #dc2626;
+    background-color: #fef2f2;
+    color: #991b1b;
+  }
+  .notice-title {
+    font-weight: 700;
+    font-size: 7.75pt;
+    margin-bottom: 1.5px;
+  }
+
+  /* Tables */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 7.5pt;
+    margin: 4px 0 5px 0;
+    line-height: 1.22;
+  }
+  th, td {
+    padding: 3px 5px;
+    border: 1px solid #cbd5e1;
+    text-align: left;
+  }
+  th {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 6.75pt;
+    letter-spacing: 0.3px;
+  }
+  tr:nth-child(even) td {
+    background-color: #f8fafc;
+  }
+  td.num, th.num {
+    text-align: right;
+  }
+  td.center, th.center {
+    text-align: center;
+  }
+  .highlight-row td {
+    background-color: #eff6ff !important;
+    font-weight: 600;
+  }
+
+  /* Layout Grids */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .feature-domain-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 10px;
+    font-size: 7.5pt;
+    margin: 3px 0 4px 0;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 3px;
+    padding: 5px 8px;
+  }
+  .feature-domain-item {
+    line-height: 1.24;
+  }
+
+  .arch-diagram {
+    background-color: #f8fafc;
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 5px 6px;
+    margin: 5px 0;
+    font-size: 7pt;
+  }
+  .diagram-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 5px;
+    margin-bottom: 3px;
+  }
+  .diagram-box {
+    background-color: #ffffff;
+    border: 1px solid #94a3b8;
+    border-radius: 3px;
+    padding: 3px 5px;
+    flex: 1;
+    text-align: center;
+  }
+  .diagram-box.primary {
+    border-color: #2563eb;
+    background-color: #eff6ff;
+  }
+  .diagram-title {
+    font-weight: 700;
+    font-size: 7.25pt;
+    color: #0f172a;
+    margin-bottom: 1.5px;
+  }
+  .diagram-desc {
+    color: #475569;
+    font-size: 6.5pt;
+    line-height: 1.2;
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 6.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+  .badge-green { background: #dcfce7; color: #166534; }
+  .badge-amber { background: #fef3c7; color: #92400e; }
+  .badge-red { background: #fee2e2; color: #991b1b; }
+
+  /* Formula display */
+  .formula {
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 3px;
+    padding: 2.5px 5px;
+    font-family: "Courier New", Courier, monospace;
+    font-size: 7.5pt;
+    text-align: center;
+    margin: 3px 0;
+  }
+  
+  .ref-list {
+    font-size: 7.25pt;
+    line-height: 1.26;
+    padding-left: 13px;
+    margin: 0;
+  }
+  .ref-list li {
+    margin-bottom: 3px;
+    text-align: justify;
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================================================= -->
+<!-- PAGE 1: TITLE, PROJECT OVERVIEW & DATASET AUDIT                           -->
+<!-- ========================================================================= -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand">CARDIA &bull; Technical Submission Report</div>
+    <div class="doc-tag">Multimodal AI Hackathon 2026 &bull; Track A (Cardiovascular Risk)</div>
+  </div>
+
+  <h1>CARDIA: Cardiovascular Risk Visualization & Multi-Vessel Stenosis AI Workstation</h1>
+  <div class="subtitle">Tabular Multi-Target Prediction Integrated with 3D Anatomical Coronary Reference Visualization</div>
+
+  <div class="meta-grid">
+    <div class="meta-item">
+      <span class="label">Challenge Track & Scope</span>
+      <span class="val">Track A: Cardiovascular Risk Visualization & Prediction</span>
+    </div>
+    <div class="meta-item">
+      <span class="label">Dataset Provenance & Identifier</span>
+      <span class="val">UCI Extension of Z-Alizadeh Sani (#411)</span>
+    </div>
+    <div class="meta-item">
+      <span class="label">Submission Date & Status</span>
+      <span class="val">October 2026 &bull; Verified Build</span>
+    </div>
+  </div>
+
+  <h2>1. Project Overview</h2>
+  <p>
+    <strong>1.1 Clinical Problem Statement:</strong> Coronary artery disease (CAD) represents the primary etiology of global cardiovascular morbidity and mortality. Definitive anatomical diagnosis requires invasive catheter coronary angiography (ICA) or coronary computed tomography angiography (CCTA). While ICA remains the gold standard for quantifying luminal narrowing, it carries procedural risks, institutional expense, and catheterization laboratory resource bottlenecks. Conversely, routine outpatient clinical workups capture detailed non-invasive data—patient demographics, resting 12-lead electrocardiography (ECG), blood biochemistry, and transthoracic echocardiography (TTE). However, conventional clinical scoring frameworks (such as Framingham or ASCVD calculators) aggregate these modalities into monolithic, non-anatomical risk indices that fail to communicate vessel-specific disease localization.
+  </p>
+  <p>
+    <strong>1.2 System Purpose & Key Contribution:</strong> CARDIA is an open-source clinical decision-support and visual exploration prototype engineered to bridge routine tabular clinical evaluation with multi-vessel anatomical risk communication. Rather than predicting only a monolithic binary CAD label, CARDIA evaluates four distinct targets confirmed via catheterization: overall CAD (<code>Cath</code>) alongside vessel-specific stenosis (&ge;50% luminal narrowing) across the three principal coronary arteries: the Left Anterior Descending (<code>LAD</code>), Left Circumflex (<code>LCX</code>), and Right Coronary Artery (<code>RCA</code>). These statistical predictions are mapped in real time to an interactive 3D WebGL anatomical coronary vascular tree, accompanied by patient-level feature attributions and transparent cross-validation performance metrics.
+  </p>
+  
+  <div class="notice-box">
+    <div class="notice-title">Anatomical Reference Standard & Scientific Scope</div>
+    To maintain scientific transparency, the 3D heart and coronary meshes in CARDIA are standard reference geometries derived from the BodyParts3D digital atlas (DBCLS, Japan). They do <strong>not</strong> represent patient-specific CCTA reconstructions, fluoroscopy, or intravascular ultrasound. Vessel color tiers depict model-predicted tabular statistical probabilities (&ge;50% stenosis likelihood), never physical plaque geometry, calcification, or localized lesions. CARDIA is an educational research prototype and cannot replace formal angiography or clinical judgment.
+  </div>
+
+  <h2>2. Dataset Provenance and Preprocessing</h2>
+  <p>
+    <strong>2.1 Cohort Provenance:</strong> Models were trained and evaluated on the <em>Extension of Z-Alizadeh Sani Dataset</em>, archived in the UC Irvine Machine Learning Repository (UCI ID 411; DOI: <strong>10.24432/C5461K</strong>). Collected at Tehran Heart Center, the cohort comprises <strong>303 consecutive patients</strong> referred for diagnostic catheter angiography (303 rows &times; 59 raw columns).
+  </p>
+  <p>
+    <strong>2.2 Feature Audit & Clinical Domains:</strong> The dataset yields <strong>54 clean predictor features</strong> across six clinical domains:
+  </p>
+  
+  <div class="feature-domain-grid">
+    <div class="feature-domain-item">
+      <strong>Demographics (4):</strong> Age (observed 30–86 yrs, mean 58.9), Sex, Weight (kg), Length (cm).<br>
+      <strong>Risk Factors & History (8):</strong> BMI, DM, HTN, Current Smoker, Ex-Smoker, FH, Obesity, DLP.<br>
+      <strong>Comorbidities (5):</strong> CRF, CVA, Airway Disease, Thyroid Disease, CHF.
+    </div>
+    <div class="feature-domain-item">
+      <strong>Bedside & Symptoms (9):</strong> BP, PR, Edema, Weak Pulse, Rales, Murmurs, Chest Pain, Dyspnea, NYHA Class.<br>
+      <strong>Resting 12-Lead ECG (8):</strong> Q Wave, ST Elevation, ST Depression, T Inversion, LVH, Poor R Progression, BBB.<br>
+      <strong>Biochemistry & Echo (17):</strong> FBS, CR, TG, LDL, HDL, BUN, ESR, HB, K, Na, WBC, Diff, PLT, EF, RWMA, VHD.
+    </div>
+  </div>
+
+  <p>
+    <strong>2.3 Preprocessing & Anti-Leakage Quarantine:</strong> Preprocessing pipeline steps applied: (1) Typographical correction: standardized <code>Sex</code> ('Fmale' corrected to 'Female'); (2) Constant feature drop: <code>Exertional CP</code> exhibited zero variance (100% 'N') and was dropped; (3) Data completeness: zero missing values across all 303 rows; (4) <strong>Target Quarantine:</strong> Invasive diagnostic catheterization outcomes <code>Cath</code>, <code>LAD</code>, <code>LCX</code>, and <code>RCA</code> were strictly segregated from the predictor matrix and barred from serving as cross-predictors. Inbound payloads containing target fields are rejected by the API with HTTP 400.
+  </p>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>Target Variable</th>
+        <th>Clinical Diagnostic Significance</th>
+        <th class="center">Positive (Stenotic/CAD)</th>
+        <th class="center">Negative (Normal)</th>
+        <th class="num">Positive Prevalence</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cath (CAD)</strong></td>
+        <td>Significant CAD in &ge;1 major coronary vessel</td>
+        <td class="center">216</td>
+        <td class="center">87</td>
+        <td class="num">71.29%</td>
+      </tr>
+      <tr>
+        <td><strong>LAD</strong></td>
+        <td>Left Anterior Descending luminal stenosis &ge;50%</td>
+        <td class="center">177</td>
+        <td class="center">126</td>
+        <td class="num">58.42%</td>
+      </tr>
+      <tr>
+        <td><strong>LCX</strong></td>
+        <td>Left Circumflex luminal stenosis &ge;50%</td>
+        <td class="center">119</td>
+        <td class="center">184</td>
+        <td class="num">39.27%</td>
+      </tr>
+      <tr>
+        <td><strong>RCA</strong></td>
+        <td>Right Coronary Artery luminal stenosis &ge;50%</td>
+        <td class="center">114</td>
+        <td class="center">189</td>
+        <td class="num">37.62%</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>2.4 Evidentiary Caveats:</strong> (1) <em>Row 94 Discrepancy:</em> Patient row 94 records <code>Cath</code>=Normal while <code>LAD</code>=Stenotic. Under formal clinical criteria, isolated &ge;50% LAD stenosis constitutes CAD. This discrepancy was preserved intact to maintain forensic fidelity to the clinical registry. (2) <em>Referral Bias:</em> The high baseline disease prevalence (71.3% CAD) reflects tertiary hospital catheterization referrals and does not mirror asymptomatic general population screening.
+  </p>
+
+  <div class="page-footer">
+    <div>CARDIA Technical Report &bull; Track A Submission</div>
+    <div>Page 1 of 5</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- PAGE 2: METHODOLOGY & MACHINE LEARNING PIPELINE                           -->
+<!-- ========================================================================= -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand">CARDIA &bull; Technical Submission Report</div>
+    <div class="doc-tag">Section 3: Methodology & Model Engineering</div>
+  </div>
+
+  <h2>3. Methodology & Machine Learning Pipeline</h2>
+  
+  <p>
+    <strong>3.1 Multi-Target Problem Formulation:</strong> CARDIA formulates risk estimation as four distinct supervised binary classification tasks over the clinical feature space <i>X</i> &subset; &reals;<sup>54</sup>:
+  </p>
+  <div class="formula">
+    <i>f</i><sub>Cath</sub>(<i>x</i>), <i>f</i><sub>LAD</sub>(<i>x</i>), <i>f</i><sub>LCX</sub>(<i>x</i>), <i>f</i><sub>RCA</sub>(<i>x</i>) &in; [0, 1]
+  </div>
+  <p>
+    Independent estimators are utilized for each target. This avoids error propagation across vessels and allows algorithm selection tailored to the physiological profile of each vascular territory.
+  </p>
+
+  <p>
+    <strong>3.2 Candidate Model Families:</strong> Three distinct machine learning paradigms were trained and cross-validated for each target:
+  </p>
+  <ul>
+    <li><strong>Regularized Logistic Regression (<code>LogisticRegression</code>):</strong> L2-penalized linear estimator (<i>C</i> = 1.0, L-BFGS solver, max iterations 1000). Serves as an interpretable linear baseline.</li>
+    <li><strong>Random Forest Classifier (<code>RandomForestClassifier</code>):</strong> Non-parametric bagged ensemble of 200 decision trees (<code>n_estimators=200</code>, <code>max_depth=6</code>, <code>min_samples_split=4</code>, random seed 42) capable of capturing feature interactions without strong distributional assumptions.</li>
+    <li><strong>Gradient Boosting Classifier (<code>GradientBoostingClassifier</code>):</strong> Sequentially stage-wise additive boosted tree ensemble (<code>n_estimators=100</code>, <code>learning_rate=0.05</code>, <code>max_depth=3</code>, <code>subsample=0.8</code>, random seed 42) optimizing deviance loss.</li>
+  </ul>
+
+  <p>
+    <strong>3.3 Leakage-Proof Cross-Validation Architecture:</strong> To eliminate data leakage and optimistic bias:
+  </p>
+  <ul>
+    <li><strong>Stratified 5-Fold Partitioning:</strong> The 303 samples were split into 5 stratified folds for each target, preserving empirical positive/negative prevalence across all training and test splits.</li>
+    <li><strong>Inside-Fold Pipeline Encapsulation:</strong> Preprocessing was strictly bound inside scikit-learn <code>Pipeline</code> objects using <code>ColumnTransformer</code>. Numerical features (38 columns) were standardized via <code>StandardScaler</code>; categorical features (16 columns) were one-hot encoded via <code>OneHotEncoder(handle_unknown='ignore', sparse_output=False)</code>. Scaling parameters (mean, standard deviation) and categorical vocabularies were fitted solely on the 4 training folds and applied out-of-fold to the evaluation fold. No global transformation preceded splitting.</li>
+  </ul>
+
+  <p>
+    <strong>3.4 Model Selection Criterion:</strong> In clinical screening, false negatives (failing to identify an ischemic coronary stenosis) carry substantial risk of unheralded infarction, whereas false positives lead to non-invasive functional testing. Relying solely on classification accuracy distorts model ranking under class imbalance. Candidate models were selected by maximizing a composite clinical utility score:
+  </p>
+  <div class="formula">
+    Score<sub>composite</sub> = 0.40 &times; <i>F</i><sub>1</sub> + 0.35 &times; ROC-AUC + 0.25 &times; Recall
+  </div>
+  <p>
+    This criterion enforces a balanced tradeoff between discriminative rank ordering (ROC-AUC), precision-recall balance (<i>F</i><sub>1</sub>), and high sensitivity (Recall) for ischemic lesion detection.
+  </p>
+
+  <p>
+    <strong>3.5 Feature Attribution & Explainability Methodology:</strong> To explain model behavior transparently without confounding statistical correlation with clinical causality:
+  </p>
+  <ul>
+    <li><strong>Global Permutation Importance:</strong> Evaluated across out-of-fold cross-validation sets using 10 random permutations. Features causing the largest reduction in scoring metrics when permuted were ranked highest.</li>
+    <li><strong>Patient-Level Local Attributions:</strong> For real-time inference on a specific patient payload, CARDIA computes local marginal contributions against the empirical background distribution. The top positive risk drivers (elevating probability) and top negative risk mitigators (lowering probability) are returned with baseline references.</li>
+    <li><strong>Associational vs. Causal Boundary:</strong> Documentation and UI components explicitly declare that feature attributions represent statistical model sensitivities within this retrospective cohort, not causal therapeutic targets. For example, while elevated ESR increases model-predicted risk, treating ESR directly without addressing underlying inflammatory or coronary disease does not imply clinical risk reduction.</li>
+  </ul>
+
+  <p>
+    <strong>3.6 Anatomical Vessel Colormap Projection:</strong> Predicted probabilities for the coronary arteries are mapped to 3D vascular branches using three intuitive visual triage tiers:
+  </p>
+  <div class="two-col">
+    <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:3px; padding:6px; font-size:7.5pt;">
+      <strong>Coronary Vessel Probability Thresholds:</strong><br>
+      &bull; <span class="badge badge-green">Low Risk (&lt; 30%)</span>: Emerald Green (<code>#10b981</code>) &mdash; Low statistical stenosis likelihood.<br>
+      &bull; <span class="badge badge-amber">Moderate Risk (30%–60%)</span>: Amber (<code>#f59e0b</code>) &mdash; Intermediate risk warranting surveillance.<br>
+      &bull; <span class="badge badge-red">High Risk (&gt; 60%)</span>: Crimson Red (<code>#ef4444</code>) &mdash; High likelihood of &ge;50% stenosis.
+    </div>
+    <div style="background:#f8fafc; border:1px solid #cbd5e1; border-radius:3px; padding:6px; font-size:7.5pt;">
+      <strong>Vessel-Specific Anatomical Scope:</strong><br>
+      &bull; <strong>LAD:</strong> Anterior interventricular wall, septum, apex.<br>
+      &bull; <strong>LCX:</strong> Lateral left ventricle, posterior left ventricular wall.<br>
+      &bull; <strong>RCA:</strong> Inferior wall, right ventricle, sinus/AV nodes.<br>
+      <em>Note: Tiers are illustrative UI indicators, not standardized diagnostic cutoffs.</em>
+    </div>
+  </div>
+
+  <div class="page-footer">
+    <div>CARDIA Technical Report &bull; Track A Submission</div>
+    <div>Page 2 of 5</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- PAGE 3: SYSTEM ARCHITECTURE & IMPLEMENTATION                              -->
+<!-- ========================================================================= -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand">CARDIA &bull; Technical Submission Report</div>
+    <div class="doc-tag">Section 4: Architecture & Implementation</div>
+  </div>
+
+  <h2>4. System Architecture & Implementation</h2>
+  
+  <p>
+    <strong>4.1 End-to-End System Topology:</strong> CARDIA is implemented as a decoupled two-tier architecture: a Python Flask machine learning inference microservice and a React 18 / TypeScript / WebGL clinical workstation.
+  </p>
+
+  <div class="arch-diagram">
+    <div class="diagram-row">
+      <div class="diagram-box primary">
+        <div class="diagram-title">Clinical Input & Schema Engine</div>
+        <div class="diagram-desc">54 tabular clinical features across 6 domains; 5 synthetic reference patient profiles; client-side validation</div>
+      </div>
+      <div class="diagram-box primary">
+        <div class="diagram-title">Interactive 3D Heart Viewer</div>
+        <div class="diagram-desc">Three.js & R3F WebGL canvas; BodyParts3D reference anatomy; isolated LAD, LCX, RCA mesh raycasting</div>
+      </div>
+      <div class="diagram-box primary">
+        <div class="diagram-title">Multi-Target Risk Dashboard</div>
+        <div class="diagram-desc">Probability cards, risk tier badges, local feature attributions, model audit modal, safety disclaimer</div>
+      </div>
+    </div>
+    <div style="text-align:center; font-size:7pt; color:#64748b; margin:2px 0;">&uarr; &darr; HTTP REST Payloads (JSON) &bull; Port 5000 &bull; CORS-Enabled &uarr; &darr;</div>
+    <div class="diagram-row">
+      <div class="diagram-box">
+        <div class="diagram-title">Anti-Leakage Validation Layer</div>
+        <div class="diagram-desc">Quarantine of target keys (Cath, LAD, LCX, RCA); physiological bounds check; age policy (18–100)</div>
+      </div>
+      <div class="diagram-box">
+        <div class="diagram-title">In-Memory Model Registry</div>
+        <div class="diagram-desc">Serialized joblib pipelines (RF, GBDT, LogReg); zero cold-start latency; ordered schema enforcement</div>
+      </div>
+      <div class="diagram-box">
+        <div class="diagram-title">Explanation & Metrics Provider</div>
+        <div class="diagram-desc">Local surrogate feature attribution engine; out-of-fold CV metrics and confusion matrices</div>
+      </div>
+    </div>
+  </div>
+
+  <p>
+    <strong>4.2 Backend REST API Service:</strong> The backend is written in Python using Flask and joblib. Upon initialization, the <code>ModelRegistry</code> loads all trained pipelines, feature schema, and background empirical distributions into memory, ensuring sub-50ms inference latency without disk reads. The API exposes five REST endpoints:
+  </p>
+  <ul>
+    <li><code>GET /api/health</code>: Verifies service liveness, reports all four loaded model pipelines, and returns system timestamp.</li>
+    <li><code>GET /api/schema</code>: Serves the complete 54-feature clinical schema, data types, permitted categorical options, and default values.</li>
+    <li><code>GET /api/metrics</code>: Returns out-of-fold cross-validation performance metrics, confusion matrices, and selection rationales for all targets.</li>
+    <li><code>GET /api/sample-patients</code>: Provides five diverse reference clinical profiles: Low-Risk Asymptomatic, Moderate-Risk Atypical, High-Risk Multi-Vessel Ischemia, Isolated LAD Lesion, and Young Extrapolation Profile (Age 20).</li>
+    <li><code>POST /api/predict</code>: Ingests clinical patient JSON; verifies schema conformance; computes multi-target inference probabilities; assigns vessel colormaps; generates local feature explanations; and appends safety disclaimers.</li>
+  </ul>
+
+  <p>
+    <strong>4.3 Strict Input Sanitation & Age Extrapolation Safeguards:</strong>
+  </p>
+  <ul>
+    <li><strong>Target Quarantine Enforcement:</strong> If an inbound request contains <code>cath</code>, <code>lad</code>, <code>lcx</code>, <code>rca</code>, or <code>cad</code>, the API immediately halts execution and returns HTTP 400 Bad Request with an explicit anti-leakage diagnostic message.</li>
+    <li><strong>Data Integrity Verification:</strong> Non-numeric characters in numeric fields, categorical values outside permitted sets, <code>NaN</code>, and <code>Infinity</code> are rejected with HTTP 400.</li>
+    <li><strong>Age Policy & Extrapolation Safeguard:</strong>
+      <ul>
+        <li>Ages &lt; 18 or &gt; 100 are rejected with HTTP 400 (<code>Age must be between 18 and 100</code>).</li>
+        <li>Ages 18–29 and 87–100 fall outside the observed training cohort (30 &le; Age &le; 86 years). The system permits inference for research exploration but returns a prominent clinical extrapolation warning: <em>"Age is outside the observed training cohort (30–86 years). Prediction reflects statistical extrapolation."</em></li>
+      </ul>
+    </li>
+  </ul>
+
+  <p>
+    <strong>4.4 Frontend Workstation & 3D WebGL Engine:</strong> Built with React 18, TypeScript, Vite, Three.js, and React Three Fiber (<code>@react-three/fiber</code>, <code>@react-three/drei</code>):
+  </p>
+  <ul>
+    <li><strong>BodyParts3D Geometry Integration:</strong> Real anatomical cardiac geometry was sourced from the Database Center for Life Science (DBCLS, Japan) under the CC BY-SA 2.1 Japan license. Anatomical structures—Heart Myocardium (<code>FMA7088</code>), LAD (<code>FMA3862/74912</code>), LCX (<code>FMA3895</code>), and RCA (<code>FMA50039/3802</code>)—were centered, oriented to standard Y-up/Z-front coordinates, and exported as native Three.js <code>BufferGeometry</code> JSON structures.</li>
+    <li><strong>Interactive Raycasting & Inspection:</strong> Clinicians can independently hover over and select LAD, LCX, and RCA branches. Raycasting identifies the hovered mesh, triggering outline highlights, focal camera centering, and automatic opening of corresponding vessel risk cards.</li>
+    <li><strong>Responsive Clinical Layout:</strong> Styled in pure CSS with a dark clinical aesthetic (near-black background <code>#050505</code>, high-contrast typography, charcoal panels). Adapts fluidly across 3-column desktop (&ge;1200px), 2-column tablet (768–1199px), and single-column mobile (&lt;768px) viewports with zero horizontal scrolling.</li>
+  </ul>
+
+  <div class="page-footer">
+    <div>CARDIA Technical Report &bull; Track A Submission</div>
+    <div>Page 3 of 5</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- PAGE 4: EVALUATION AND RESULTS                                            -->
+<!-- ========================================================================= -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand">CARDIA &bull; Technical Submission Report</div>
+    <div class="doc-tag">Section 5: Evaluation & Experimental Results</div>
+  </div>
+
+  <h2>5. Evaluation and Experimental Results</h2>
+  
+  <p>
+    <strong>5.1 Verification Source & Sample Size:</strong> All reported evaluation figures derive strictly from out-of-fold cross-validation predictions pooled across all 303 patients (<i>n</i> = 303) during Stratified 5-Fold Cross-Validation, serialized in <code>results/metrics/model_comparison.csv</code> and <code>results/metrics/selected_model_metrics.json</code>.
+  </p>
+
+  <h3>Table 1: Cross-Validation Model Comparison (<i>n</i> = 303, Stratified 5-Fold CV)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Target Variable</th>
+        <th>Model Architecture</th>
+        <th class="num">Accuracy</th>
+        <th class="num">Precision</th>
+        <th class="num">Recall</th>
+        <th class="num">F1-Score</th>
+        <th class="num">ROC-AUC</th>
+        <th class="center">Pos / Neg</th>
+        <th>Deployment Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td rowspan="3"><strong>Cath (CAD)</strong><br><span style="font-size:6.5pt; color:#64748b;">Overall CAD</span></td>
+        <td>Logistic Regression</td>
+        <td class="num">85.15%</td>
+        <td class="num">92.12%</td>
+        <td class="num">86.57%</td>
+        <td class="num">89.26%</td>
+        <td class="num">92.42%</td>
+        <td class="center" rowspan="3">216 / 87</td>
+        <td>Evaluated</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>Random Forest</td>
+        <td class="num">88.12%</td>
+        <td class="num">92.06%</td>
+        <td class="num">91.20%</td>
+        <td class="num">91.63%</td>
+        <td class="num">92.85%</td>
+        <td><strong>Selected</strong></td>
+      </tr>
+      <tr>
+        <td>Gradient Boosting</td>
+        <td class="num">83.50%</td>
+        <td class="num">85.17%</td>
+        <td class="num">93.06%</td>
+        <td class="num">88.94%</td>
+        <td class="num">91.10%</td>
+        <td>Evaluated</td>
+      </tr>
+      
+      <tr>
+        <td rowspan="3"><strong>LAD</strong><br><span style="font-size:6.5pt; color:#64748b;">Anterior Descending</span></td>
+        <td>Logistic Regression</td>
+        <td class="num">71.95%</td>
+        <td class="num">78.05%</td>
+        <td class="num">72.32%</td>
+        <td class="num">75.07%</td>
+        <td class="num">81.54%</td>
+        <td class="center" rowspan="3">177 / 126</td>
+        <td>Evaluated</td>
+      </tr>
+      <tr>
+        <td>Random Forest</td>
+        <td class="num">76.57%</td>
+        <td class="num">79.44%</td>
+        <td class="num">80.79%</td>
+        <td class="num">80.11%</td>
+        <td class="num">84.02%</td>
+        <td>Evaluated</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>Gradient Boosting</td>
+        <td class="num">78.55%</td>
+        <td class="num">79.79%</td>
+        <td class="num">84.75%</td>
+        <td class="num">82.19%</td>
+        <td class="num">83.65%</td>
+        <td><strong>Selected</strong></td>
+      </tr>
+
+      <tr>
+        <td rowspan="3"><strong>LCX</strong><br><span style="font-size:6.5pt; color:#64748b;">Circumflex Artery</span></td>
+        <td>Logistic Regression</td>
+        <td class="num">62.38%</td>
+        <td class="num">51.75%</td>
+        <td class="num">62.18%</td>
+        <td class="num">56.49%</td>
+        <td class="num">66.82%</td>
+        <td class="center" rowspan="3">119 / 184</td>
+        <td>Evaluated</td>
+      </tr>
+      <tr class="highlight-row">
+        <td>Random Forest</td>
+        <td class="num">66.34%</td>
+        <td class="num">56.49%</td>
+        <td class="num">62.18%</td>
+        <td class="num">59.20%</td>
+        <td class="num">71.32%</td>
+        <td><strong>Selected</strong></td>
+      </tr>
+      <tr>
+        <td>Gradient Boosting</td>
+        <td class="num">66.01%</td>
+        <td class="num">58.00%</td>
+        <td class="num">48.74%</td>
+        <td class="num">52.97%</td>
+        <td class="num">71.36%</td>
+        <td>Evaluated</td>
+      </tr>
+
+      <tr>
+        <td rowspan="3"><strong>RCA</strong><br><span style="font-size:6.5pt; color:#64748b;">Right Coronary</span></td>
+        <td class="highlight-row">Logistic Regression</td>
+        <td class="num highlight-row">66.34%</td>
+        <td class="num highlight-row">54.48%</td>
+        <td class="num highlight-row">64.04%</td>
+        <td class="num highlight-row">58.87%</td>
+        <td class="num highlight-row">70.94%</td>
+        <td class="center" rowspan="3">114 / 189</td>
+        <td class="highlight-row"><strong>Selected</strong></td>
+      </tr>
+      <tr>
+        <td>Random Forest</td>
+        <td class="num">66.34%</td>
+        <td class="num">55.17%</td>
+        <td class="num">56.14%</td>
+        <td class="num">55.65%</td>
+        <td class="num">70.21%</td>
+        <td>Evaluated</td>
+      </tr>
+      <tr>
+        <td>Gradient Boosting</td>
+        <td class="num">64.36%</td>
+        <td class="num">53.41%</td>
+        <td class="num">41.23%</td>
+        <td class="num">46.53%</td>
+        <td class="num">68.84%</td>
+        <td>Evaluated</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Table 2: Deployed Pipeline Performance & Confusion Matrix Breakdown (<i>n</i> = 303)</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Target</th>
+        <th>Selected Model</th>
+        <th class="num">Accuracy</th>
+        <th class="num">Precision</th>
+        <th class="num">Recall</th>
+        <th class="num">F1-Score</th>
+        <th class="num">ROC-AUC</th>
+        <th class="num">TN</th>
+        <th class="num">FP</th>
+        <th class="num">FN</th>
+        <th class="num">TP</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Cath</strong></td>
+        <td>Random Forest</td>
+        <td class="num">88.12%</td>
+        <td class="num">92.06%</td>
+        <td class="num">91.20%</td>
+        <td class="num">91.63%</td>
+        <td class="num">92.85%</td>
+        <td class="num">70</td>
+        <td class="num">17</td>
+        <td class="num">19</td>
+        <td class="num">197</td>
+      </tr>
+      <tr>
+        <td><strong>LAD</strong></td>
+        <td>Gradient Boosting</td>
+        <td class="num">78.55%</td>
+        <td class="num">79.79%</td>
+        <td class="num">84.75%</td>
+        <td class="num">82.19%</td>
+        <td class="num">83.65%</td>
+        <td class="num">88</td>
+        <td class="num">38</td>
+        <td class="num">27</td>
+        <td class="num">150</td>
+      </tr>
+      <tr>
+        <td><strong>LCX</strong></td>
+        <td>Random Forest</td>
+        <td class="num">66.34%</td>
+        <td class="num">56.49%</td>
+        <td class="num">62.18%</td>
+        <td class="num">59.20%</td>
+        <td class="num">71.32%</td>
+        <td class="num">127</td>
+        <td class="num">57</td>
+        <td class="num">45</td>
+        <td class="num">74</td>
+      </tr>
+      <tr>
+        <td><strong>RCA</strong></td>
+        <td>Logistic Regression</td>
+        <td class="num">66.34%</td>
+        <td class="num">54.48%</td>
+        <td class="num">64.04%</td>
+        <td class="num">58.87%</td>
+        <td class="num">70.94%</td>
+        <td class="num">128</td>
+        <td class="num">61</td>
+        <td class="num">41</td>
+        <td class="num">73</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <p>
+    <strong>5.2 Analysis of Target Performance Disparity (LAD vs. LCX/RCA):</strong> A critical finding is the pronounced performance gradient across anatomical targets:
+  </p>
+  <ul>
+    <li><strong>Strong Discrimination for Cath and LAD:</strong> Overall CAD (ROC-AUC 92.85%, F1 91.63%) and LAD stenosis (ROC-AUC 83.65%, F1 82.19%) demonstrate high discriminative accuracy. The LAD perfuses a large anatomical territory (anterior wall, septum, apex). Severe LAD lesions generate pronounced electrophysiological disruptions visible on standard precordial leads (V1–V4 ST changes, T-wave inversion, Q waves) and resting echocardiography (anterior regional wall motion abnormalities).</li>
+    <li><strong>Attenuated Performance for LCX and RCA:</strong> Prediction for LCX (ROC-AUC 71.32%, F1 59.20%) and RCA (ROC-AUC 70.94%, F1 58.87%) is noticeably weaker. This divergence is grounded in cardiovascular physiology:
+      <ol>
+        <li><em>Electrocardiographic Insensitivity:</em> Standard 12-lead ECG is anatomically insensitive to the lateral and posterior left ventricular myocardium supplied by the LCX. Ischemia in the circumflex distribution is frequently "electrically silent" unless posterior leads (V7–V9) are recorded.</li>
+        <li><em>Coronary Dominance & Collateralization:</em> In approximately 85% of individuals, the coronary circulation is right-dominant; in ~10% it is left-dominant. A stenosis in a non-dominant LCX or RCA produces minimal resting functional disturbance or biomarker alteration.</li>
+        <li><em>Class Imbalance:</em> LCX (39.3% positive) and RCA (37.6% positive) are minority classes, providing fewer positive training instances than overall CAD (71.3% positive).</li>
+      </ol>
+    </li>
+  </ul>
+
+  <p>
+    <strong>5.3 Methodological Limitations:</strong> (1) <em>Pooled Estimation:</em> Metrics reflect pooled out-of-fold predictions (<i>n</i> = 303); variance across folds is not captured in point estimates. (2) <em>Selection Optimism:</em> Selecting the highest-scoring model introduces minor selection optimism. (3) <em>Calibration Status:</em> Output probabilities were not formally calibrated with Platt scaling or isotonic regression on a holdout set; they must be interpreted as monotonic risk rankings rather than absolute frequentist probabilities.
+  </p>
+
+  <div class="page-footer">
+    <div>CARDIA Technical Report &bull; Track A Submission</div>
+    <div>Page 4 of 5</div>
+  </div>
+</div>
+
+<!-- ========================================================================= -->
+<!-- PAGE 5: LIMITATIONS, RESPONSIBLE USE & REFERENCES                         -->
+<!-- ========================================================================= -->
+<div class="page">
+  <div class="page-header">
+    <div class="brand">CARDIA &bull; Technical Submission Report</div>
+    <div class="doc-tag">Sections 6 & 7: Limitations, Ethics & References</div>
+  </div>
+
+  <h2>6. Limitations, Responsible Use, and Future Work</h2>
+  
+  <p>
+    <strong>6.1 Explicit System Limitations:</strong>
+  </p>
+  <ul>
+    <li><strong>Cohort Scale & Diversity (<i>n</i> = 303):</strong> Training was conducted on 303 patients from a single tertiary Iranian cardiovascular center. The sample lacks statistical power to represent multi-ethnic genetic backgrounds or rare clinical phenotypes.</li>
+    <li><strong>Tertiary Referral Bias:</strong> All cohort patients presented with clinical indications warranting invasive catheterization (baseline CAD prevalence 71.3%). Deployment in asymptomatic primary care screening populations would increase false positives without model recalibration.</li>
+    <li><strong>Absence of Plaque Localization:</strong> The 3D cardiac model represents idealized reference geometry. CARDIA cannot identify the anatomical segment (proximal, mid, or distal) of stenosis, nor can it characterize plaque morphology, calcification, or ulceration.</li>
+    <li><strong>Associational Nature of Attributions:</strong> Feature importance weights reflect statistical model sensitivities, not causal biological mechanisms. They must not be interpreted as actionable therapeutic targets.</li>
+    <li><strong>Extrapolation Hazards:</strong> Input profiles with age &lt; 30 or &gt; 86 years, or extreme physiological outliers, fall outside the observed training manifold and carry heightened predictive uncertainty.</li>
+  </ul>
+
+  <div class="notice-box alert">
+    <div class="notice-title">MANDATORY CLINICAL SAFETY NOTICE & RESPONSIBLE USE DECLARATION</div>
+    CARDIA is exclusively an educational research prototype and clinical decision-support proof-of-concept. It is <strong>not</strong> a cleared medical device and must never be utilized as the sole or primary basis for diagnostic, surgical, interventional, or pharmacotherapeutic decisions. All predictions must be evaluated by licensed healthcare professionals in conjunction with standard diagnostic modalities, formal imaging, and patient clinical history.
+  </div>
+
+  <p>
+    <strong>6.2 Future Work Roadmap:</strong>
+  </p>
+  <ul>
+    <li><strong>External Multicenter Validation:</strong> Evaluating prospective generalizability across diverse international cohorts (e.g., Cleveland Clinic, Hungarian, and Swiss cohorts) without retraining.</li>
+    <li><strong>Probability Calibration:</strong> Implementing temperature scaling or isotonic regression on holdout validation cohorts to guarantee calibrated predictive probabilities.</li>
+    <li><strong>Native Multimodal Waveform & Video Ingestion:</strong> Transitioning from tabular summaries to native multimodal deep learning architectures capable of directly ingesting raw 12-lead ECG voltage waveforms and echocardiographic video loops.</li>
+    <li><strong>Patient-Specific CCTA Vascular Reconstruction:</strong> Developing deep learning mesh generation pipelines to extract patient-specific 3D coronary geometry directly from DICOM CCTA volumes.</li>
+  </ul>
+
+  <h2>7. References and Attributions</h2>
+  <ol class="ref-list">
+    <li>
+      <strong>Alizadeh-Sani, R., Roshanzamir, M., Abdar, M., Beykikhoshk, A., Khosravi, A., Nahavandi, S., Tan, K. C., & Acharya, U. R.</strong> (2017). <em>A database of patients for coronary artery disease diagnosis with extension of features.</em> Extension of Z-Alizadeh Sani Dataset, UC Irvine Machine Learning Repository. DOI: <a href="https://doi.org/10.24432/C5461K" style="color:#2563eb; text-decoration:none;">10.24432/C5461K</a>.
+    </li>
+    <li>
+      <strong>Database Center for Life Science (DBCLS), Japan.</strong> (2013). <em>BodyParts3D: 3D Anatomical Concepts for Anatomography.</em> Anatomical concepts: Heart Myocardium (<code>FMA7088</code>), LAD (<code>FMA3862/74912</code>), LCX (<code>FMA3895</code>), RCA (<code>FMA50039/3802</code>). Licensed under Creative Commons Attribution-Share Alike 2.1 Japan (CC BY-SA 2.1 JP). Available at: <a href="https://lifesciencedb.jp/bp3d/" style="color:#2563eb; text-decoration:none;">https://lifesciencedb.jp/bp3d/</a>.
+    </li>
+    <li>
+      <strong>Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., Blondel, M., Prettenhofer, P., Weiss, R., Dubourg, V., et al.</strong> (2011). <em>Scikit-learn: Machine Learning in Python.</em> Journal of Machine Learning Research, 12, 2825–2830.
+    </li>
+    <li>
+      <strong>Wellens, H. J., & Conover, M. B.</strong> (2006). <em>The ECG in Emergency Decision Making.</em> 2nd Edition, Saunders Elsevier. (Clinical basis for 12-lead ECG insensitivity in circumflex and posterior myocardial ischemia).
+    </li>
+    <li>
+      <strong>Knuuti, J., Wijns, W., Saraste, A., Capodanno, D., Barbato, E., Funck-Brentano, C., Prescott, E., Storey, R. F., et al.</strong> (2020). <em>2019 ESC Guidelines for the diagnosis and management of chronic coronary syndromes.</em> European Heart Journal, 41(3), 407–477. DOI: <a href="https://doi.org/10.1093/eurheartj/ehz425" style="color:#2563eb; text-decoration:none;">10.1093/eurheartj/ehz425</a>.
+    </li>
+    <li>
+      <strong>Cabello, R., et al.</strong> (2024). <em>Three.js: JavaScript 3D Library.</em> Open-source WebGL 3D rendering engine. Available at: <a href="https://threejs.org/" style="color:#2563eb; text-decoration:none;">https://threejs.org/</a>.
+    </li>
+    <li>
+      <strong>Lundberg, S. M., & Lee, S. I.</strong> (2017). <em>A Unified Approach to Interpreting Model Predictions.</em> Advances in Neural Information Processing Systems 30 (NeurIPS 2017).
+    </li>
+  </ol>
+
+  <div class="page-footer">
+    <div>CARDIA Technical Report &bull; Track A Submission</div>
+    <div>Page 5 of 5</div>
+  </div>
+</div>
+
+</body>
+</html>

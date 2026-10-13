@@ -1,7 +1,7 @@
 """
 Download and verify the official Extension of Z-Alizadeh Sani Dataset (UCI ID 411).
 Saves the raw archive in data/raw/ and the verified processed dataset in data/processed/alizadeh_sani.csv.
-Generates results/dataset_audit.json with comprehensive provenance, schema, and target distributions.
+Generates results/dataset_audit.json with dataset provenance, schema, and target distributions.
 """
 
 import json
@@ -182,7 +182,7 @@ def audit_and_process():
 
     with open(AUDIT_JSON_PATH, "w") as f:
         json.dump(audit_data, f, indent=2)
-    print(f"Saved comprehensive audit report to {AUDIT_JSON_PATH}")
+    print(f"Saved audit report to {AUDIT_JSON_PATH}")
 
     return audit_data
 

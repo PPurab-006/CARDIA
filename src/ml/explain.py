@@ -91,7 +91,7 @@ def compute_local_explanation(
                 "patient_value": str(patient_row[col].iloc[0]) if col in patient_row else None
             })
     else:
-        # Robust perturbation attribution for non-linear / tree classifiers:
+        # Perturbation attribution for non-linear / tree classifiers:
         # Compare prediction with feature replaced by sample median/mode
         for col in patient_row.columns:
             perturbed = patient_row.copy()
