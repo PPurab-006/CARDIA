@@ -1,4 +1,4 @@
-import React, { useRef, useState, useMemo } from 'react';
+import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -17,48 +17,13 @@ interface HeartViewerProps {
 }
 
 // ---------------------------------------------------------------------------
-// Procedural Anatomical Coronary Curves
+// Anatomical Scene Component: Renders BodyParts3D Myocardium & Segmented Vessels
 // ---------------------------------------------------------------------------
-const LAD_POINTS = [
-  new THREE.Vector3(0.18, 0.72, 0.75),   // Left main bifurcation
-  new THREE.Vector3(0.24, 0.45, 0.90),
-  new THREE.Vector3(0.20, 0.15, 0.98),
-  new THREE.Vector3(0.12, -0.22, 0.92),  // Mid-LAD in anterior sulcus
-  new THREE.Vector3(0.04, -0.58, 0.78),
-  new THREE.Vector3(-0.02, -0.88, 0.58), // Distal LAD
-  new THREE.Vector3(-0.06, -1.08, 0.38), // Apex
-];
-
-const LCX_POINTS = [
-  new THREE.Vector3(0.18, 0.72, 0.75),   // Left main bifurcation
-  new THREE.Vector3(0.48, 0.65, 0.65),
-  new THREE.Vector3(0.82, 0.52, 0.35),   // Circumflex curving posterolaterally
-  new THREE.Vector3(0.96, 0.30, -0.05),
-  new THREE.Vector3(0.88, 0.05, -0.38),  // Obtuse marginal territory
-  new THREE.Vector3(0.70, -0.25, -0.55),
-  new THREE.Vector3(0.48, -0.50, -0.58), // Posterior lateral branch
-];
-
-const RCA_POINTS = [
-  new THREE.Vector3(-0.25, 0.70, 0.72),  // Right coronary sinus origin
-  new THREE.Vector3(-0.55, 0.55, 0.68),
-  new THREE.Vector3(-0.78, 0.32, 0.52),  // Right AV groove
-  new THREE.Vector3(-0.85, 0.02, 0.30),
-  new THREE.Vector3(-0.80, -0.35, 0.08), // Acute margin
-  new THREE.Vector3(-0.62, -0.62, -0.22),
-  new THREE.Vector3(-0.35, -0.80, -0.45),// Posterior descending artery (PDA)
-];
-
-// Helper to create smooth tube geometries
-function createTube(points: THREE.Vector3[], radius: number = 0.045) {
-  const curve = new THREE.CatmullRomCurve3(points);
-  return new THREE.TubeGeometry(curve, 64, radius, 12, false);
-}
-
-// ---------------------------------------------------------------------------
-// 3D Heart Mesh & Coronary Vessels Scene
-// ---------------------------------------------------------------------------
-interface HeartMeshProps {
+interface AnatomicalHeartGroupProps {
+  heartGeo: THREE.BufferGeometry;
+  ladGeo: THREE.BufferGeometry;
+  lcxGeo: THREE.BufferGeometry;
+  rcaGeo: THREE.BufferGeometry;
   vesselColormap?: {
     LAD: VesselVisualization;
     LCX: VesselVisualization;
@@ -70,7 +35,11 @@ interface HeartMeshProps {
   isPulsing: boolean;
 }
 
-const HeartGroup: React.FC<HeartMeshProps> = ({
+const AnatomicalHeartGroup: React.FC<AnatomicalHeartGroupProps> = ({
+  heartGeo,
+  ladGeo,
+  lcxGeo,
+  rcaGeo,
   vesselColormap,
   selectedVessel,
   onSelectVessel,
@@ -80,18 +49,13 @@ const HeartGroup: React.FC<HeartMeshProps> = ({
   const groupRef = useRef<THREE.Group>(null);
   const [hoveredVessel, setHoveredVessel] = useState<string | null>(null);
 
-  // Precompute geometries
-  const ladGeo = useMemo(() => createTube(LAD_POINTS, 0.048), []);
-  const lcxGeo = useMemo(() => createTube(LCX_POINTS, 0.044), []);
-  const rcaGeo = useMemo(() => createTube(RCA_POINTS, 0.046), []);
-
-  // Soft cardiac beat animation
+  // Soft physiological ventricular contraction cycle
   useFrame((state) => {
     if (groupRef.current) {
       if (isPulsing) {
         const t = state.clock.getElapsedTime();
-        // Physiological two-stage ventricular contraction pulse
-        const beat = 1.0 + 0.022 * Math.sin(t * 4.2) + 0.012 * Math.sin(t * 8.4);
+        // Two-stage cardiac ventricular ejection pulse
+        const beat = 1.0 + 0.02 * Math.sin(t * 4.2) + 0.01 * Math.sin(t * 8.4);
         groupRef.current.scale.set(beat, beat, beat);
       } else {
         groupRef.current.scale.set(1, 1, 1);
@@ -99,18 +63,18 @@ const HeartGroup: React.FC<HeartMeshProps> = ({
     }
   });
 
-  // Color resolver
+  // Color resolver for each coronary branch
   const getVesselColor = (key: 'LAD' | 'LCX' | 'RCA') => {
     if (predictionsAvailable && vesselColormap && vesselColormap[key]) {
       return vesselColormap[key].color_hex;
     }
-    // Neutral anatomical slate/amber baseline before prediction
-    if (key === 'LAD') return '#38bdf8'; // Sky blue
+    // Baseline clinical distinction prior to running prediction
+    if (key === 'LAD') return '#38bdf8'; // Cyan
     if (key === 'LCX') return '#818cf8'; // Indigo
     return '#fb923c';                    // Coral
   };
 
-  const renderCoronaryArtery = (
+  const renderCoronaryMesh = (
     key: 'LAD' | 'LCX' | 'RCA',
     geo: THREE.BufferGeometry
   ) => {
@@ -134,84 +98,36 @@ const HeartGroup: React.FC<HeartMeshProps> = ({
         <meshStandardMaterial
           color={baseColor}
           emissive={isSelected ? baseColor : isHovered ? '#38bdf8' : '#000000'}
-          emissiveIntensity={isSelected ? 0.75 : isHovered ? 0.45 : 0.0}
+          emissiveIntensity={isSelected ? 0.8 : isHovered ? 0.5 : 0.05}
           roughness={0.25}
-          metalness={0.35}
+          metalness={0.3}
+          polygonOffset
+          polygonOffsetFactor={-1} // Render vessel cleanly on top of myocardium
+          polygonOffsetUnits={-1}
         />
       </mesh>
     );
   };
 
   return (
-    <group ref={groupRef} position={[0, 0, 0]}>
-      {/* 1. Main Cardiac Myocardium (Ventricles & Conical Apex) */}
-      <mesh position={[0, -0.15, 0]} rotation={[0.08, 0.1, -0.12]}>
-        <sphereGeometry args={[1.12, 48, 48]} />
+    <group ref={groupRef} position={[0, -0.1, 0]}>
+      {/* 1. BodyParts3D Myocardium (Cardiac Muscle Walls & Chambers - FMA7088) */}
+      <mesh geometry={heartGeo}>
         <meshStandardMaterial
-          color="#881337" // Deep anatomical myocardial burgundy
+          color="#661028" // Deep anatomical myocardial burgundy
           roughness={0.65}
-          metalness={0.12}
-        />
-      </mesh>
-
-      {/* 2. Left Ventricular Posterior Bulk */}
-      <mesh position={[0.22, -0.28, -0.18]} rotation={[0.1, 0.2, -0.15]}>
-        <sphereGeometry args={[0.95, 36, 36]} />
-        <meshStandardMaterial
-          color="#7f1d1d"
-          roughness={0.7}
-          metalness={0.1}
-        />
-      </mesh>
-
-      {/* 3. Atria & Base of Heart */}
-      <mesh position={[-0.28, 0.65, -0.1]} rotation={[-0.1, 0, 0.15]}>
-        <sphereGeometry args={[0.62, 32, 32]} />
-        <meshStandardMaterial
-          color="#991b1b"
-          roughness={0.6}
-          metalness={0.15}
-        />
-      </mesh>
-      <mesh position={[0.35, 0.62, -0.15]} rotation={[-0.1, 0, -0.15]}>
-        <sphereGeometry args={[0.58, 32, 32]} />
-        <meshStandardMaterial
-          color="#991b1b"
-          roughness={0.6}
           metalness={0.15}
         />
       </mesh>
 
-      {/* 4. Aortic Root & Arch (Ascending Aorta) */}
-      <mesh position={[0.05, 1.05, 0.12]} rotation={[-0.15, 0.1, 0.05]}>
-        <cylinderGeometry args={[0.26, 0.32, 0.85, 28]} />
-        <meshStandardMaterial
-          color="#b91c1c"
-          roughness={0.4}
-          metalness={0.25}
-        />
-      </mesh>
+      {/* 2. BodyParts3D LAD Coronary Tree (FMA3862 / FMA74912) */}
+      {renderCoronaryMesh('LAD', ladGeo)}
 
-      {/* 5. Pulmonary Trunk & Artery */}
-      <mesh position={[-0.18, 0.95, 0.32]} rotation={[0.25, -0.2, 0.1]}>
-        <cylinderGeometry args={[0.22, 0.26, 0.72, 28]} />
-        <meshStandardMaterial
-          color="#1e3a8a" // Deoxygenated pulmonary blue tone
-          roughness={0.45}
-          metalness={0.2}
-        />
-      </mesh>
+      {/* 3. BodyParts3D LCX Coronary Tree (FMA3895) */}
+      {renderCoronaryMesh('LCX', lcxGeo)}
 
-      {/* 6. Aortic Main Bifurcation Hub */}
-      <mesh position={[0.05, 0.78, 0.58]}>
-        <sphereGeometry args={[0.16, 20, 20]} />
-        <meshStandardMaterial color="#dc2626" roughness={0.3} metalness={0.3} />
-      </mesh>
-
-      {/* 7. The Three Coronary Arteries */}
-      {renderCoronaryArtery('LAD', ladGeo)}
-      {renderCoronaryArtery('LCX', lcxGeo)}
-      {renderCoronaryArtery('RCA', rcaGeo)}
+      {/* 4. BodyParts3D RCA Coronary Tree (FMA50039 / FMA3802) */}
+      {renderCoronaryMesh('RCA', rcaGeo)}
     </group>
   );
 };
@@ -228,6 +144,64 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
   const controlsRef = useRef<any>(null);
   const [isPulsing, setIsPulsing] = useState<boolean>(true);
 
+  // Model geometries loaded from BodyParts3D assets
+  const [geometries, setGeometries] = useState<{
+    heart: THREE.BufferGeometry | null;
+    lad: THREE.BufferGeometry | null;
+    lcx: THREE.BufferGeometry | null;
+    rca: THREE.BufferGeometry | null;
+  }>({
+    heart: null,
+    lad: null,
+    lcx: null,
+    rca: null
+  });
+  const [isLoadingModel, setIsLoadingModel] = useState<boolean>(true);
+  const [modelError, setModelError] = useState<string | null>(null);
+
+  // Load BodyParts3D BufferGeometry assets on mount
+  useEffect(() => {
+    let isMounted = true;
+    const loader = new THREE.BufferGeometryLoader();
+
+    async function loadModels() {
+      try {
+        setIsLoadingModel(true);
+        setModelError(null);
+
+        const [heartRes, ladRes, lcxRes, rcaRes] = await Promise.all([
+          fetch('/models/heart_myocardium.json').then((r) => r.json()),
+          fetch('/models/lad.json').then((r) => r.json()),
+          fetch('/models/lcx.json').then((r) => r.json()),
+          fetch('/models/rca.json').then((r) => r.json())
+        ]);
+
+        if (!isMounted) return;
+
+        setGeometries({
+          heart: loader.parse(heartRes),
+          lad: loader.parse(ladRes),
+          lcx: loader.parse(lcxRes),
+          rca: loader.parse(rcaRes)
+        });
+      } catch (err: any) {
+        console.error('Failed to load BodyParts3D models:', err);
+        if (isMounted) {
+          setModelError('Unable to load BodyParts3D anatomical meshes.');
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingModel(false);
+        }
+      }
+    }
+
+    loadModels();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const resetView = () => {
     if (controlsRef.current) {
       controlsRef.current.reset();
@@ -239,19 +213,22 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
     const v = vesselColormap[selectedVessel as 'LAD' | 'LCX' | 'RCA'];
     if (!v) return null;
 
-    const descriptions: Record<string, { territory: string; model: string; cvAuc: string }> = {
+    const descriptions: Record<string, { fma: string; territory: string; model: string; cvAuc: string }> = {
       LAD: {
-        territory: 'Anterior wall of left ventricle, interventricular septum & apex.',
+        fma: 'FMA3862 / FMA74912',
+        territory: 'Anterior wall of left ventricle, anterior interventricular septum, apex & diagonal branches.',
         model: 'GradientBoostingClassifier',
         cvAuc: '0.8365'
       },
       LCX: {
-        territory: 'Lateral & posterior-lateral left ventricular myocardium.',
+        fma: 'FMA3895',
+        territory: 'Lateral & posterior-lateral left ventricular myocardium via obtuse marginal branches.',
         model: 'RandomForestClassifier',
         cvAuc: '0.7132'
       },
       RCA: {
-        territory: 'Right ventricle, inferior posterior wall & sinoatrial/AV node.',
+        fma: 'FMA50039 / FMA3802',
+        territory: 'Right ventricle, inferior wall, sinoatrial/AV node & posterior descending artery (PDA).',
         model: 'LogisticRegression',
         cvAuc: '0.7094'
       }
@@ -267,35 +244,57 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
     };
   }, [selectedVessel, vesselColormap]);
 
+  const hasAllGeometries =
+    geometries.heart && geometries.lad && geometries.lcx && geometries.rca;
+
   return (
     <div className="heart-viewer-wrapper">
       {/* 3D Canvas */}
       <div className="canvas-container">
+        {isLoadingModel && (
+          <div className="model-loading-overlay">
+            <span className="spinner" />
+            <span>Loading BodyParts3D Anatomical Meshes...</span>
+          </div>
+        )}
+
+        {modelError && (
+          <div className="model-error-overlay">
+            <span>{modelError}</span>
+          </div>
+        )}
+
         <Canvas
-          camera={{ position: [0, 0.4, 4.2], fov: 45 }}
+          camera={{ position: [0, 0.2, 3.8], fov: 45 }}
           gl={{ antialias: true, alpha: true }}
         >
           {/* Medical Imaging Lighting Setup */}
-          <ambientLight intensity={0.75} />
-          <directionalLight position={[4, 5, 4]} intensity={1.4} color="#ffffff" />
-          <directionalLight position={[-4, 3, -3]} intensity={0.6} color="#38bdf8" />
-          <directionalLight position={[0, -4, 2]} intensity={0.4} color="#ffffff" />
+          <ambientLight intensity={0.8} />
+          <directionalLight position={[4, 5, 4]} intensity={1.5} color="#ffffff" />
+          <directionalLight position={[-4, 3, -3]} intensity={0.7} color="#38bdf8" />
+          <directionalLight position={[0, -4, 2]} intensity={0.5} color="#ffffff" />
           <pointLight position={[0, 2, 3]} intensity={0.8} color="#f8fafc" />
 
-          <HeartGroup
-            vesselColormap={vesselColormap}
-            selectedVessel={selectedVessel}
-            onSelectVessel={onSelectVessel}
-            predictionsAvailable={predictionsAvailable}
-            isPulsing={isPulsing}
-          />
+          {hasAllGeometries && (
+            <AnatomicalHeartGroup
+              heartGeo={geometries.heart!}
+              ladGeo={geometries.lad!}
+              lcxGeo={geometries.lcx!}
+              rcaGeo={geometries.rca!}
+              vesselColormap={vesselColormap}
+              selectedVessel={selectedVessel}
+              onSelectVessel={onSelectVessel}
+              predictionsAvailable={predictionsAvailable}
+              isPulsing={isPulsing}
+            />
+          )}
 
           <OrbitControls
             ref={controlsRef}
             enableDamping
             dampingFactor={0.06}
-            minDistance={2.2}
-            maxDistance={7.5}
+            minDistance={2.0}
+            maxDistance={7.0}
             rotateSpeed={0.85}
           />
         </Canvas>
@@ -304,15 +303,20 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
       {/* Top Overlay Controls Bar */}
       <div className="viewer-controls-bar">
         <div className="viewer-title-group">
-          <span className="viewer-badge">3D ANATOMICAL REFERENCE</span>
-          <span className="viewer-subtext">Click any coronary vessel to inspect predicted stenosis risk</span>
+          <div className="viewer-badge-row">
+            <span className="viewer-badge">BODYPARTS3D ANATOMICAL RESOURCE</span>
+            <span className="cc-license-tag">CC BY-SA 2.1 JP</span>
+          </div>
+          <span className="viewer-subtext">
+            Authentic human cardiac geometry &bull; Click any coronary vessel to inspect
+          </span>
         </div>
         <div className="viewer-actions">
           <button
             type="button"
             className={`viewer-btn ${isPulsing ? 'active' : ''}`}
             onClick={() => setIsPulsing(!isPulsing)}
-            title="Toggle Cardiac Motion"
+            title="Toggle Cardiac Contraction Motion"
           >
             <Activity size={15} />
             <span>{isPulsing ? 'Pulse On' : 'Paused'}</span>
@@ -321,7 +325,7 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
             type="button"
             className="viewer-btn"
             onClick={resetView}
-            title="Reset Camera View"
+            title="Reset Camera View to Standard Coronal Projection"
           >
             <RotateCcw size={15} />
             <span>Reset View</span>
@@ -352,12 +356,12 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
         })}
       </div>
 
-      {/* Selected Vessel Inspector Card */}
+      {/* Selected Vessel Detail Inspector Card */}
       {vesselDetails && (
         <div className="vessel-inspector-card">
           <div className="inspector-header">
             <div>
-              <span className="inspector-tag">{vesselDetails.key} BRANCH</span>
+              <span className="inspector-tag">{vesselDetails.key} BRANCH &bull; {vesselDetails.fma}</span>
               <h4 className="inspector-title">{vesselDetails.name}</h4>
             </div>
             <button
@@ -377,7 +381,7 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
               </span>
             </div>
 
-            {/* Probability Bar */}
+            {/* Probability Progress Fill */}
             <div className="inspector-meter">
               <div
                 className="inspector-meter-fill"
@@ -399,12 +403,16 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
                 <span className="meta-k">CV ROC-AUC:</span>
                 <span className="meta-v">{vesselDetails.cvAuc}</span>
               </div>
+              <div>
+                <span className="meta-k">Anatomical Source:</span>
+                <span className="meta-v">BodyParts3D (DBCLS)</span>
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Color Scale Legend & Honesty Notice */}
+      {/* Color Scale Legend & Statutory Anatomical Honesty Note */}
       <div className="viewer-bottom-bar">
         <div className="color-scale-legend">
           <span className="legend-title">Stenosis Likelihood Scale:</span>
@@ -424,7 +432,9 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
 
         <div className="anatomical-honesty-note">
           <Info size={13} className="info-icon" />
-          <span>Reference anatomical geometry. Vessel colors display model-predicted probabilities (&ge;50% stenosis), not physical plaque geometry.</span>
+          <span>
+            BodyParts3D anatomical reference mesh (© DBCLS CC BY-SA 2.1 Japan). Segmented LAD, LCX & RCA vessels. Vessel colors reflect model-predicted stenosis likelihoods (≥50% narrowing), not observed patient plaque coordinates.
+          </span>
         </div>
       </div>
     </div>

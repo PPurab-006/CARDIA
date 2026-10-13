@@ -1,0 +1,39 @@
+{
+  "source": "BodyParts3D / Anatomography",
+  "portal_url": "https://lifesciencedb.jp/bp3d/",
+  "download_archive": "https://dbarchive.biosciencedbc.jp/data/bodyparts3d/LATEST/partof_BP3D_4.0_obj_99.zip",
+  "license": "Creative Commons Attribution-Share Alike 2.1 Japan (CC BY-SA 2.1 JP)",
+  "license_url": "https://creativecommons.org/licenses/by-sa/2.1/jp/",
+  "attribution_notice": "BodyParts3D, \u00a9 The Database Center for Life Science licensed under CC Attribution-Share Alike 2.1 Japan",
+  "structures": {
+    "Heart": {
+      "fma_id": "FMA7088",
+      "description": "Myocardium and cardiac chambers (excluding blood cavities)",
+      "parts_count": 77,
+      "vertices": 55546,
+      "triangles": 95868
+    },
+    "LAD": {
+      "fma_id": "FMA3862 / FMA74912",
+      "description": "Anterior interventricular branch of left coronary artery + diagonal branches + left main trunk",
+      "parts_count": 19,
+      "vertices": 5983,
+      "triangles": 9648
+    },
+    "LCX": {
+      "fma_id": "FMA3895",
+      "description": "Circumflex branch of left coronary artery + obtuse marginal branches",
+      "parts_count": 6,
+      "vertices": 2025,
+      "triangles": 3018
+    },
+    "RCA": {
+      "fma_id": "FMA50039 / FMA3802",
+      "description": "Right coronary artery trunk, marginal, conus, and posterior interventricular branches",
+      "parts_count": 56,
+      "vertices": 17042,
+      "triangles": 24498
+    }
+  },
+  "modifications": "Extracted from polygon-reduced 4.0 release (99% reduction rate); centered around heart centroid; transformed to Three.js coordinate system (Y-up, Z-forward); precomputed vertex normals for smooth standard shading."
+}

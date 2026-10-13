@@ -57,11 +57,18 @@ All models were evaluated using **Stratified 5-Fold Cross-Validation** with insi
 ## 5. 3D Heart Visualization Architecture
 
 The 3D cardiac viewer is implemented in React Three Fiber (`@react-three/fiber`), Three.js, and `@react-three/drei`:
-- **Anatomical Geometry:** Procedural multi-chamber heart mesh (ventricles, atria, aortic root, pulmonary trunk) paired with separate parametric `CatmullRomCurve3` tube geometries representing LAD, LCX, and RCA coronary arterial trajectories.
-- **Interactive Inspection:** Hover highlights and click selection on individual coronary vessels.
-- **Camera & Scene Controls:** Drei `OrbitControls` with smooth damping, zoom limits, cardiac contraction toggle, and camera reset.
-- **Lightweight WebGL:** Runs in standard desktop browsers without requiring a dedicated GPU.
-- **Asset License:** Custom procedural Three.js geometry implemented directly within CARDIA under MIT License. No proprietary 3D external assets required.
+- **Anatomical Geometry:** Real human cardiac geometry sourced from the verified **BodyParts3D / Anatomography** database (Database Center for Life Science / DBCLS, Japan). The myocardium and separated coronary branches are extracted from release 4.0 (part-of hierarchy):
+  - **Heart Myocardium (`FMA7088`):** Complete ventricular and atrial muscular walls.
+  - **LAD (`FMA3862` / `FMA74912`):** Anterior interventricular branch, trunk, and diagonal branches.
+  - **LCX (`FMA3895`):** Circumflex branch and obtuse marginal branches.
+  - **RCA (`FMA50039` / `FMA3802`):** Right coronary trunk, acute marginal branches, conus artery, and posterior interventricular branch (PDA).
+- **Interactive Inspection:** Individual hover highlights and click selection on LAD, LCX, and RCA coronary trees.
+- **Camera & Scene Controls:** Drei `OrbitControls` with smooth damping, zoom boundaries, cardiac contraction toggle, and camera reset.
+- **Lightweight WebGL:** Native Three.js `BufferGeometry` rendering at 60 FPS without requiring a dedicated GPU.
+- **Attribution & License:**
+  - **License:** Creative Commons Attribution-Share Alike 2.1 Japan ([CC BY-SA 2.1 JP](https://creativecommons.org/licenses/by-sa/2.1/jp/)).
+  - **Attribution Notice:** *"BodyParts3D, © The Database Center for Life Science licensed under CC Attribution-Share Alike 2.1 Japan"*.
+  - **Modifications:** Normalized to unified millimeter center, transformed to Three.js coordinate system (Y-up, Z-front), precomputed vertex normals, and exported to optimized Three.js BufferGeometry JSON and Wavefront OBJ formats in `frontend/public/models/`.
 
 ---
 
