@@ -1,0 +1,751 @@
+{
+  "dataset_name": "Extension of Z-Alizadeh Sani Dataset",
+  "uci_id": 411,
+  "doi": "10.24432/C5461K",
+  "download_url": "https://archive.ics.uci.edu/static/public/411/extention+of+z+alizadeh+sani+dataset.zip",
+  "raw_archive_path": "data/raw/extention_of_z_alizadeh_sani_dataset.zip",
+  "raw_excel_path": "data/raw/extention of Z-Alizadeh sani dataset.xlsx",
+  "processed_csv_path": "data/processed/alizadeh_sani.csv",
+  "shape": {
+    "rows": 303,
+    "columns": 59
+  },
+  "target_verification_passed": true,
+  "target_distributions": {
+    "Cath": {
+      "CAD": 216,
+      "Normal": 87
+    },
+    "LAD": {
+      "Stenotic": 177,
+      "Normal": 126
+    },
+    "LCX": {
+      "Normal": 184,
+      "Stenotic": 119
+    },
+    "RCA": {
+      "Normal": 189,
+      "Stenotic": 114
+    }
+  },
+  "label_discrepancy_preserved": {
+    "count": 1,
+    "note": "Row 94 discrepancy between Cath (Normal) and LAD (Stenotic) is preserved exactly as recorded in the clinical dataset.",
+    "mismatches": [
+      {
+        "dataset_row_index": 93,
+        "patient_row_excel": 95,
+        "Cath": "Normal",
+        "LAD": "Stenotic",
+        "LCX": "Normal",
+        "RCA": "Normal"
+      }
+    ]
+  },
+  "data_quality": {
+    "total_missing_values": 0,
+    "missing_columns_count": 0,
+    "duplicate_records": 0,
+    "constant_columns": [
+      "Exertional CP"
+    ]
+  },
+  "normalization_applied": [
+    {
+      "column": "Sex",
+      "rule": "Replace 'Fmale' typo with 'Female'",
+      "before": {
+        "Male": 176,
+        "Fmale": 127
+      },
+      "after": {
+        "Male": 176,
+        "Female": 127
+      }
+    }
+  ],
+  "feature_profiles": {
+    "Age": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 46,
+      "sample_values": [
+        "53",
+        "67",
+        "54",
+        "66",
+        "50",
+        "55"
+      ],
+      "missing_count": 0
+    },
+    "Weight": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 54,
+      "sample_values": [
+        "90",
+        "70",
+        "54",
+        "67",
+        "87",
+        "75"
+      ],
+      "missing_count": 0
+    },
+    "Length": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 44,
+      "sample_values": [
+        "175",
+        "157",
+        "164",
+        "158",
+        "153",
+        "165"
+      ],
+      "missing_count": 0
+    },
+    "Sex": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "Male",
+        "Female"
+      ],
+      "missing_count": 0
+    },
+    "BMI": {
+      "dtype": "float64",
+      "is_numeric": true,
+      "n_unique": 263,
+      "sample_values": [
+        "29.387755102040817",
+        "28.398718000730252",
+        "20.077334919690664",
+        "26.83864765261977",
+        "37.165192874535435",
+        "24.489795918367346"
+      ],
+      "missing_count": 0
+    },
+    "DM": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "HTN": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "1",
+        "0"
+      ],
+      "missing_count": 0
+    },
+    "Current Smoker": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "1",
+        "0"
+      ],
+      "missing_count": 0
+    },
+    "EX-Smoker": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "FH": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "Obesity": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "Y",
+        "N"
+      ],
+      "missing_count": 0
+    },
+    "CRF": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "CVA": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Airway disease": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Thyroid Disease": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "CHF": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "DLP": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "Y",
+        "N"
+      ],
+      "missing_count": 0
+    },
+    "BP": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 17,
+      "sample_values": [
+        "110",
+        "140",
+        "100",
+        "118",
+        "130",
+        "90"
+      ],
+      "missing_count": 0
+    },
+    "PR": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 21,
+      "sample_values": [
+        "80",
+        "100",
+        "70",
+        "50",
+        "84",
+        "74"
+      ],
+      "missing_count": 0
+    },
+    "Edema": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "Weak Peripheral Pulse": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Lung rales": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Systolic Murmur": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Diastolic Murmur": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Typical Chest Pain": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "Dyspnea": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Function Class": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 4,
+      "sample_values": [
+        "0",
+        "3",
+        "2",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "Atypical": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Nonanginal": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Exertional CP": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 1,
+      "sample_values": [
+        "N"
+      ],
+      "missing_count": 0
+    },
+    "LowTH Ang": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Q Wave": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "St Elevation": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "0",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "St Depression": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "1",
+        "0"
+      ],
+      "missing_count": 0
+    },
+    "Tinversion": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 2,
+      "sample_values": [
+        "1",
+        "0"
+      ],
+      "missing_count": 0
+    },
+    "LVH": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "Poor R Progression": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "N",
+        "Y"
+      ],
+      "missing_count": 0
+    },
+    "BBB": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 3,
+      "sample_values": [
+        "N",
+        "LBBB",
+        "RBBB"
+      ],
+      "missing_count": 0
+    },
+    "FBS": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 113,
+      "sample_values": [
+        "90",
+        "80",
+        "85",
+        "78",
+        "104",
+        "86"
+      ],
+      "missing_count": 0
+    },
+    "CR": {
+      "dtype": "float64",
+      "is_numeric": true,
+      "n_unique": 18,
+      "sample_values": [
+        "0.7",
+        "1.0",
+        "1.2",
+        "0.8",
+        "0.9",
+        "0.6"
+      ],
+      "missing_count": 0
+    },
+    "TG": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 147,
+      "sample_values": [
+        "250",
+        "309",
+        "103",
+        "63",
+        "170",
+        "139"
+      ],
+      "missing_count": 0
+    },
+    "LDL": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 110,
+      "sample_values": [
+        "155",
+        "121",
+        "70",
+        "55",
+        "110",
+        "119"
+      ],
+      "missing_count": 0
+    },
+    "HDL": {
+      "dtype": "float64",
+      "is_numeric": true,
+      "n_unique": 47,
+      "sample_values": [
+        "30.0",
+        "36.0",
+        "45.0",
+        "27.0",
+        "50.0",
+        "34.0"
+      ],
+      "missing_count": 0
+    },
+    "BUN": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 33,
+      "sample_values": [
+        "8",
+        "30",
+        "17",
+        "16",
+        "13",
+        "12"
+      ],
+      "missing_count": 0
+    },
+    "ESR": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 58,
+      "sample_values": [
+        "7",
+        "26",
+        "10",
+        "76",
+        "27",
+        "18"
+      ],
+      "missing_count": 0
+    },
+    "HB": {
+      "dtype": "float64",
+      "is_numeric": true,
+      "n_unique": 66,
+      "sample_values": [
+        "15.6",
+        "13.9",
+        "13.5",
+        "12.1",
+        "13.2",
+        "14.1"
+      ],
+      "missing_count": 0
+    },
+    "K": {
+      "dtype": "float64",
+      "is_numeric": true,
+      "n_unique": 27,
+      "sample_values": [
+        "4.7",
+        "4.4",
+        "4.0",
+        "4.2",
+        "4.8",
+        "4.3"
+      ],
+      "missing_count": 0
+    },
+    "Na": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 25,
+      "sample_values": [
+        "141",
+        "156",
+        "139",
+        "142",
+        "140",
+        "128"
+      ],
+      "missing_count": 0
+    },
+    "WBC": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 78,
+      "sample_values": [
+        "5700",
+        "7700",
+        "7400",
+        "13000",
+        "9200",
+        "7300"
+      ],
+      "missing_count": 0
+    },
+    "Lymph": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 50,
+      "sample_values": [
+        "39",
+        "38",
+        "18",
+        "55",
+        "26",
+        "58"
+      ],
+      "missing_count": 0
+    },
+    "Neut": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 52,
+      "sample_values": [
+        "52",
+        "55",
+        "60",
+        "72",
+        "39",
+        "66"
+      ],
+      "missing_count": 0
+    },
+    "PLT": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 135,
+      "sample_values": [
+        "261",
+        "165",
+        "230",
+        "742",
+        "274",
+        "194"
+      ],
+      "missing_count": 0
+    },
+    "EF-TTE": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 11,
+      "sample_values": [
+        "50",
+        "40",
+        "55",
+        "45",
+        "25",
+        "30"
+      ],
+      "missing_count": 0
+    },
+    "Region RWMA": {
+      "dtype": "int64",
+      "is_numeric": true,
+      "n_unique": 5,
+      "sample_values": [
+        "0",
+        "4",
+        "2",
+        "3",
+        "1"
+      ],
+      "missing_count": 0
+    },
+    "VHD": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 4,
+      "sample_values": [
+        "N",
+        "mild",
+        "Severe",
+        "Moderate"
+      ],
+      "missing_count": 0
+    },
+    "LAD": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "Stenotic",
+        "Normal"
+      ],
+      "missing_count": 0
+    },
+    "LCX": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "Normal",
+        "Stenotic"
+      ],
+      "missing_count": 0
+    },
+    "RCA": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "Stenotic",
+        "Normal"
+      ],
+      "missing_count": 0
+    },
+    "Cath": {
+      "dtype": "str",
+      "is_numeric": false,
+      "n_unique": 2,
+      "sample_values": [
+        "CAD",
+        "Normal"
+      ],
+      "missing_count": 0
+    }
+  }
+}

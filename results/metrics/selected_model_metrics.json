@@ -1,0 +1,94 @@
+{
+  "Cath": {
+    "target": "Cath",
+    "target_description": "Overall Coronary Artery Disease (Cath / CAD)",
+    "selected_model": "RandomForest",
+    "cross_validation": "Stratified 5-Fold",
+    "metrics": {
+      "accuracy": 0.8812,
+      "precision": 0.9206,
+      "recall": 0.912,
+      "f1": 0.9163,
+      "roc_auc": 0.9285,
+      "pos_support": 216,
+      "neg_support": 87,
+      "total_support": 303,
+      "confusion_matrix": {
+        "tn": 70,
+        "fp": 17,
+        "fn": 19,
+        "tp": 197
+      }
+    },
+    "selection_rationale": "Maximized clinical composite score (0.40*F1 + 0.35*ROC_AUC + 0.25*Recall)"
+  },
+  "LAD": {
+    "target": "LAD",
+    "target_description": "Left Anterior Descending Artery Stenosis (>=50%)",
+    "selected_model": "GradientBoosting",
+    "cross_validation": "Stratified 5-Fold",
+    "metrics": {
+      "accuracy": 0.7855,
+      "precision": 0.7979,
+      "recall": 0.8475,
+      "f1": 0.8219,
+      "roc_auc": 0.8365,
+      "pos_support": 177,
+      "neg_support": 126,
+      "total_support": 303,
+      "confusion_matrix": {
+        "tn": 88,
+        "fp": 38,
+        "fn": 27,
+        "tp": 150
+      }
+    },
+    "selection_rationale": "Maximized clinical composite score (0.40*F1 + 0.35*ROC_AUC + 0.25*Recall)"
+  },
+  "LCX": {
+    "target": "LCX",
+    "target_description": "Left Circumflex Artery Stenosis (>=50%)",
+    "selected_model": "RandomForest",
+    "cross_validation": "Stratified 5-Fold",
+    "metrics": {
+      "accuracy": 0.6634,
+      "precision": 0.5649,
+      "recall": 0.6218,
+      "f1": 0.592,
+      "roc_auc": 0.7132,
+      "pos_support": 119,
+      "neg_support": 184,
+      "total_support": 303,
+      "confusion_matrix": {
+        "tn": 127,
+        "fp": 57,
+        "fn": 45,
+        "tp": 74
+      }
+    },
+    "selection_rationale": "Maximized clinical composite score (0.40*F1 + 0.35*ROC_AUC + 0.25*Recall)"
+  },
+  "RCA": {
+    "target": "RCA",
+    "target_description": "Right Coronary Artery Stenosis (>=50%)",
+    "selected_model": "LogisticRegression",
+    "cross_validation": "Stratified 5-Fold",
+    "metrics": {
+      "accuracy": 0.6634,
+      "precision": 0.5448,
+      "recall": 0.6404,
+      "f1": 0.5887,
+      "roc_auc": 0.7094,
+      "pos_support": 114,
+      "neg_support": 189,
+      "total_support": 303,
+      "confusion_matrix": {
+        "tn": 128,
+        "fp": 61,
+        "fn": 41,
+        "tp": 73
+      }
+    },
+    "selection_rationale": "Maximized clinical composite score (0.40*F1 + 0.35*ROC_AUC + 0.25*Recall)"
+  }
+}

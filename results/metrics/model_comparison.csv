@@ -1,0 +1,13 @@
+target,target_description,model,accuracy,precision,recall,f1_score,roc_auc,pos_support,neg_support
+Cath,Overall Coronary Artery Disease (Cath / CAD),LogisticRegression,0.8515,0.9212,0.8657,0.8926,0.9242,216,87
+Cath,Overall Coronary Artery Disease (Cath / CAD),RandomForest,0.8812,0.9206,0.912,0.9163,0.9285,216,87
+Cath,Overall Coronary Artery Disease (Cath / CAD),GradientBoosting,0.835,0.8517,0.9306,0.8894,0.911,216,87
+LAD,Left Anterior Descending Artery Stenosis (>=50%),LogisticRegression,0.7195,0.7805,0.7232,0.7507,0.8154,177,126
+LAD,Left Anterior Descending Artery Stenosis (>=50%),RandomForest,0.7657,0.7944,0.8079,0.8011,0.8402,177,126
+LAD,Left Anterior Descending Artery Stenosis (>=50%),GradientBoosting,0.7855,0.7979,0.8475,0.8219,0.8365,177,126
+LCX,Left Circumflex Artery Stenosis (>=50%),LogisticRegression,0.6238,0.5175,0.6218,0.5649,0.6682,119,184
+LCX,Left Circumflex Artery Stenosis (>=50%),RandomForest,0.6634,0.5649,0.6218,0.592,0.7132,119,184
+LCX,Left Circumflex Artery Stenosis (>=50%),GradientBoosting,0.6601,0.58,0.4874,0.5297,0.7136,119,184
+RCA,Right Coronary Artery Stenosis (>=50%),LogisticRegression,0.6634,0.5448,0.6404,0.5887,0.7094,114,189
+RCA,Right Coronary Artery Stenosis (>=50%),RandomForest,0.6634,0.5517,0.5614,0.5565,0.7021,114,189
+RCA,Right Coronary Artery Stenosis (>=50%),GradientBoosting,0.6436,0.5341,0.4123,0.4653,0.6884,114,189
