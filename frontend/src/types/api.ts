@@ -2,6 +2,8 @@ export interface FeatureNumericMeta {
   type: 'numeric';
   min: number;
   max: number;
+  cohort_min?: number;
+  cohort_max?: number;
   default: number;
 }
 
@@ -78,6 +80,7 @@ export interface PredictionResponse {
     RCA?: ExplanationItem[];
   };
   global_top_features: Record<string, string[]>;
+  warnings?: string[];
   disclaimer: string;
 }
 

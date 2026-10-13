@@ -59,8 +59,10 @@
   "features": {
     "Age": {
       "type": "numeric",
-      "min": 30.0,
-      "max": 86.0,
+      "min": 18.0,
+      "max": 100.0,
+      "cohort_min": 30.0,
+      "cohort_max": 86.0,
       "default": 58
     },
     "Weight": {

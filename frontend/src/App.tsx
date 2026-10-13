@@ -126,8 +126,14 @@ export const App: React.FC = () => {
             errors[key] = 'Required numeric field';
           } else {
             const num = Number(val);
-            if (num < numMeta.min || num > numMeta.max) {
-              errors[key] = `Must be between ${numMeta.min} and ${numMeta.max}`;
+            if (key === 'Age') {
+              if (num < 18 || num > 100) {
+                errors[key] = 'Age must be between 18 and 100';
+              }
+            } else {
+              if (num < numMeta.min || num > numMeta.max) {
+                errors[key] = `Must be between ${numMeta.min} and ${numMeta.max}`;
+              }
             }
           }
         } else if (meta.type === 'categorical') {

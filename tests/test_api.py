@@ -177,11 +177,76 @@ def test_nan_and_infinity_rejection(client, valid_patient_payload):
 
     # Test extreme out of bounds
     out_of_bounds = valid_patient_payload.copy()
-    out_of_bounds["Age"] = 180  # Max human age in schema is 86
+    out_of_bounds["Age"] = 180
     res2 = client.post("/api/predict", json=out_of_bounds)
     assert res2.status_code == 400
     data2 = res2.get_json()
-    assert "outside clinical boundary" in data2["message"]
+    assert "outside" in data2["message"]
+
+
+@pytest.mark.parametrize("age,expected_status", [
+    (17, 400),
+    (18, 200),
+    (20, 200),
+    (29, 200),
+    (30, 200),
+    (86, 200),
+    (87, 200),
+    (100, 200),
+    (101, 400),
+])
+def test_age_validation_boundaries(client, valid_patient_payload, age, expected_status):
+    """
+    Verify application age policy at every specified boundary:
+    - Permitted application range: 18–100.
+    - Ages 17 and 101 produce 400 blocking errors.
+    - Ages 18, 20, 29, 30, 86, 87, 100 return 200 valid predictions.
+    - Ages in [18, 29] and [87, 100] include non-blocking extrapolation warnings.
+    - Ages in [30, 86] (training cohort) return predictions without extrapolation warning.
+    """
+    payload = valid_patient_payload.copy()
+    payload["Age"] = age
+    res = client.post("/api/predict", json=payload)
+    assert res.status_code == expected_status
+    data = res.get_json()
+
+    if expected_status == 400:
+        assert data["status"] == "error"
+        assert "Age" in data["message"]
+    else:
+        assert data["status"] == "success"
+        assert "predictions" in data
+        if (18 <= age < 30) or (86 < age <= 100):
+            assert "warnings" in data
+            assert len(data["warnings"]) > 0
+            assert any("outside the observed training cohort" in w for w in data["warnings"])
+        else:
+            # Training cohort range: no extrapolation warnings
+            assert "warnings" in data
+            assert len(data["warnings"]) == 0
+
+
+def test_age_20_synthetic_profile_prediction(client, valid_patient_payload):
+    """
+    Confirm Age 20 completes a real synthetic profile prediction request
+    with all 4 target probabilities and explanations.
+    """
+    payload = valid_patient_payload.copy()
+    payload["Age"] = 20
+    res = client.post("/api/predict", json=payload)
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["status"] == "success"
+
+    for target in ["CAD", "LAD", "LCX", "RCA"]:
+        assert target in data["predictions"]
+        p = data["predictions"][target]["probability"]
+        assert 0.0 <= p <= 1.0
+        assert target in data["explanations"]
+        assert len(data["explanations"][target]) > 0
+
+    assert "warnings" in data
+    assert any("Age (20)" in w or "Age 20" in w or "outside the observed training cohort" in w for w in data["warnings"])
 
 
 def test_malformed_json_and_non_json_content(client):

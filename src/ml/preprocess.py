@@ -128,12 +128,22 @@ def get_feature_schema(X: pd.DataFrame) -> Dict[str, Any]:
         s = X[col]
         is_numeric = bool(pd.api.types.is_numeric_dtype(s))
         if is_numeric:
-            schema["features"][col] = {
-                "type": "numeric",
-                "min": float(s.min()),
-                "max": float(s.max()),
-                "default": float(s.median()) if float(s.median()).is_integer() is False else int(s.median())
-            }
+            if col == "Age":
+                schema["features"][col] = {
+                    "type": "numeric",
+                    "min": 18.0,
+                    "max": 100.0,
+                    "cohort_min": float(s.min()),
+                    "cohort_max": float(s.max()),
+                    "default": float(s.median()) if float(s.median()).is_integer() is False else int(s.median())
+                }
+            else:
+                schema["features"][col] = {
+                    "type": "numeric",
+                    "min": float(s.min()),
+                    "max": float(s.max()),
+                    "default": float(s.median()) if float(s.median()).is_integer() is False else int(s.median())
+                }
         else:
             unique_vals = sorted([str(x) for x in s.dropna().unique()])
             schema["features"][col] = {

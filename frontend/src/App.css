@@ -1,9 +1,8 @@
 /* ==========================================================================
-   CARDIA — App-level layout, mobile navigation, and utility classes
-   All component-level styles live in index.css
+   CARDIA — Workstation Layout & Responsive Design (Desktop, Tablet, Mobile)
    ========================================================================== */
 
-/* ── Mobile Section Navigator ───────────────────────────────────────────── */
+/* ── Mobile Section Navigator (visible only < 768px) ─────────────────────── */
 
 .mobile-section-nav {
   display: none;
@@ -14,7 +13,7 @@
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
   position: sticky;
-  top: 64px;
+  top: 56px;
   z-index: 30;
 }
 
@@ -24,25 +23,30 @@
 
 .mobile-nav-tabs {
   display: flex;
-  gap: 0;
+  gap: 4px;
   white-space: nowrap;
+  max-width: 600px;
+  margin: 0 auto;
 }
 
 .mobile-nav-tab {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
-  padding: 10px 14px;
+  padding: 12px 14px;
+  min-height: 44px;
   background: transparent;
   border: none;
   border-bottom: 2px solid transparent;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
   font-family: var(--font-sans);
   white-space: nowrap;
+  flex: 1;
 }
 
 .mobile-nav-tab:hover {
@@ -55,17 +59,20 @@
   font-weight: 600;
 }
 
-@media (max-width: 1100px) {
-  .mobile-section-nav {
-    display: block;
-  }
+.mobile-result-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--cyan-primary);
+  box-shadow: 0 0 6px var(--cyan-primary);
+  display: inline-block;
 }
 
-/* ── Workstation Main Layout: 3 cols → 2 cols → 1 col ──────────────────── */
+/* ── Workstation Layout: Desktop (>= 1200px) ────────────────────────────── */
 
 .workstation-main-layout {
   display: grid;
-  grid-template-columns: 370px 1fr 390px;
+  grid-template-columns: 360px 1fr 380px;
   grid-template-rows: 1fr;
   gap: 16px;
   padding: 16px 20px;
@@ -75,31 +82,106 @@
   align-items: start;
 }
 
-@media (max-width: 1400px) {
+@media (min-width: 1400px) {
   .workstation-main-layout {
-    grid-template-columns: 330px 1fr 360px;
-    gap: 12px;
-    padding: 12px 16px;
+    grid-template-columns: 380px 1fr 400px;
+    gap: 18px;
+    padding: 18px 24px;
   }
 }
 
-@media (max-width: 1200px) {
+.workstation-col {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+
+/* Column Heights on Desktop */
+.col-left .col-panel-card {
+  height: calc(100vh - 170px);
+  min-height: 540px;
+}
+
+.heart-canvas-card {
+  height: calc(100vh - 170px);
+  min-height: 500px;
+}
+
+.col-right .col-panel-card {
+  max-height: calc(52vh - 60px);
+  min-height: 200px;
+  overflow-y: auto;
+}
+
+.col-right .explanations-card-panel {
+  max-height: calc(48vh - 70px);
+  min-height: 180px;
+  overflow-y: auto;
+}
+
+/* ── Tablet Staged Layout: 768px – 1199px (2 Columns) ───────────────────── */
+
+@media (min-width: 768px) and (max-width: 1199px) {
+  .mobile-section-nav {
+    display: none !important;
+  }
+
   .workstation-main-layout {
-    grid-template-columns: 300px 1fr 320px;
-    gap: 10px;
-    padding: 10px 12px;
+    grid-template-columns: 340px 1fr;
+    grid-template-areas:
+      "form heart"
+      "form results";
+    gap: 14px;
+    padding: 14px 16px;
+  }
+
+  .col-left {
+    grid-area: form;
+    display: flex !important;
+  }
+
+  .col-center {
+    grid-area: heart;
+    display: flex !important;
+  }
+
+  .col-right {
+    grid-area: results;
+    display: flex !important;
+  }
+
+  .col-left .col-panel-card {
+    height: auto;
+    min-height: 600px;
+  }
+
+  .heart-canvas-card {
+    height: 400px;
+    min-height: 350px;
+  }
+
+  .col-right .col-panel-card,
+  .col-right .explanations-card-panel {
+    max-height: none;
+    height: auto;
   }
 }
 
-/* Below 1100px: single column, mobile section nav controls visibility */
-@media (max-width: 1100px) {
+/* ── Mobile Layout: < 768px (Single Column Touch Workflow) ──────────────── */
+
+@media (max-width: 767px) {
+  .mobile-section-nav {
+    display: block;
+  }
+
   .workstation-main-layout {
     grid-template-columns: 1fr;
     gap: 0;
     padding: 0;
   }
 
-  /* Each section is hidden by default on mobile; .mobile-active shows it */
+  /* Only active tab section is displayed on mobile */
   .workstation-col {
     display: none;
     padding: 12px;
@@ -109,37 +191,8 @@
   .workstation-col.mobile-active {
     display: flex;
   }
-}
 
-/* ── Column Heights ──────────────────────────────────────────────────────── */
-
-.col-left .col-panel-card {
-  /* Clinical form: fills viewport height minus header + footer */
-  height: calc(100vh - 170px);
-  min-height: 520px;
-}
-
-.heart-canvas-card {
-  height: calc(100vh - 170px);
-  min-height: 480px;
-}
-
-.col-right .col-panel-card {
-  /* Right panels: auto-height, scroll individually */
-  max-height: calc(50vh - 60px);
-  min-height: 180px;
-  overflow-y: auto;
-}
-
-.col-right .explanations-card-panel {
-  max-height: calc(50vh - 70px);
-  min-height: 160px;
-  overflow-y: auto;
-}
-
-@media (max-width: 1100px) {
   .col-left .col-panel-card,
-  .heart-canvas-card,
   .col-right .col-panel-card,
   .col-right .explanations-card-panel {
     height: auto;
@@ -148,30 +201,36 @@
   }
 
   .heart-canvas-card {
-    height: 60vw;
-    min-height: 320px;
-    max-height: 560px;
+    height: 360px;
+    min-height: 300px;
+    max-height: 440px;
   }
 
   .clinical-form-panel {
     height: auto !important;
     min-height: 0 !important;
-    max-height: 70vh;
+    max-height: none;
+  }
+
+  .form-fields-scroll-area {
+    max-height: none;
+    overflow-y: visible;
   }
 }
 
-@media (max-width: 600px) {
-  .heart-canvas-card {
-    height: 72vw;
-    min-height: 280px;
-  }
-
+@media (max-width: 480px) {
   .workstation-col {
     padding: 8px;
+    gap: 10px;
+  }
+
+  .heart-canvas-card {
+    height: 320px;
+    min-height: 280px;
   }
 }
 
-/* ── Stale overlay shimmer animation ─────────────────────────────────────── */
+/* ── Stale Warning Animation ────────────────────────────────────────────── */
 
 @keyframes stale-pulse {
   0%   { opacity: 0.7; }
@@ -179,81 +238,15 @@
   100% { opacity: 0.7; }
 }
 
-.loading-shimmer {
-  animation: stale-pulse 1.4s ease-in-out infinite;
-}
-
-/* ── Age cohort out-of-range warning (non-blocking) ─────────────────────── */
-
-.age-cohort-warning {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 6px 10px;
+.stale-warning-banner {
   background: rgba(245, 158, 11, 0.1);
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.35);
   border-radius: var(--radius-sm);
-  font-size: 11px;
-  color: #fde68a;
-  line-height: 1.35;
-  margin-top: 4px;
-}
-
-.age-cohort-warning svg {
-  flex-shrink: 0;
-  margin-top: 1px;
-  color: var(--risk-mod);
-}
-
-/* ── Utility classes ──────────────────────────────────────────────────────── */
-
-.text-cyan   { color: var(--cyan-primary); }
-.text-amber  { color: var(--risk-mod); }
-.text-rose   { color: var(--risk-high); }
-.text-green  { color: var(--risk-low); }
-.text-slate-muted { color: var(--text-muted); }
-.inline-icon { display: inline; vertical-align: middle; }
-.spin { animation: spin 1s linear infinite; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Spinner dots */
-.spinner {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border: 2px solid var(--border-muted);
-  border-top-color: var(--cyan-primary);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-.spinner-sm {
-  display: inline-block;
-  width: 13px;
-  height: 13px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-/* Form loading placeholder */
-.form-loading-placeholder {
+  padding: 8px 12px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 32px 20px;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-.explanations-empty p.empty-subtext {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 6px;
-}
-.no-data-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-  padding: 8px 0;
+  gap: 8px;
+  font-size: 11px;
+  color: #fbbf24;
+  animation: stale-pulse 3s infinite ease-in-out;
 }

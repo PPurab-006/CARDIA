@@ -243,6 +243,25 @@ def get_sample_patients():
         "Region RWMA": 0
     })
 
+    # Profile 4: Young Adult / Extrapolation Boundary Test (Illustrative Synthetic)
+    young_adult = baseline.copy()
+    young_adult.update({
+        "Age": 20,
+        "Sex": "Male",
+        "DM": 0,
+        "HTN": 0,
+        "Current Smoker": 0,
+        "Typical Chest Pain": 0,
+        "BP": 120,
+        "PR": 70,
+        "FBS": 90,
+        "TG": 120,
+        "LDL": 100,
+        "HDL": 50,
+        "EF-TTE": 60,
+        "Region RWMA": 0
+    })
+
     return jsonify({
         "status": "success",
         "synthetic_notice": (
@@ -267,6 +286,12 @@ def get_sample_patients():
                 "label": "Illustrative Profile 3: Moderate Risk with Angina",
                 "summary": "57yo Male, Diabetic, hypertensive, typical chest pain, preserved ejection fraction (50%).",
                 "profile": mod_risk
+            },
+            {
+                "id": "young_adult_extrapolation",
+                "label": "Illustrative Profile 4: Young Adult (Age 20 Extrapolation Test)",
+                "summary": "20yo Male, Non-smoker, normal vitals — demonstrates out-of-cohort extrapolation handling (18–29 yrs).",
+                "profile": young_adult
             }
         ]
     }), 200
@@ -316,15 +341,21 @@ def validate_prediction_payload(payload: Any, schema: Dict[str, Any]) -> Tuple[D
             if math.isnan(num_val) or math.isinf(num_val):
                 return None, f"Field '{f}' contains non-finite numeric value (NaN or Infinity)."
 
-            # Enforce documented bounds with reasonable tolerance
-            min_val = meta["min"]
-            max_val = meta["max"]
-            # Apply 15% clinical tolerance for continuous variables to avoid rejecting realistic edge cases
-            tol_min = min_val * 0.85 if min_val > 0 else min_val * 1.15
-            tol_max = max_val * 1.15
+            if f == "Age":
+                app_min = float(meta.get("min", 18.0))
+                app_max = float(meta.get("max", 100.0))
+                if num_val < app_min or num_val > app_max:
+                    return None, f"Field 'Age' value {num_val} is outside allowed boundary [{int(app_min)}, {int(app_max)}]."
+            else:
+                # Enforce documented bounds with reasonable tolerance
+                min_val = meta["min"]
+                max_val = meta["max"]
+                # Apply 15% clinical tolerance for continuous variables to avoid rejecting realistic edge cases
+                tol_min = min_val * 0.85 if min_val > 0 else min_val * 1.15
+                tol_max = max_val * 1.15
 
-            if num_val < tol_min or num_val > tol_max:
-                return None, f"Field '{f}' value {num_val} is outside clinical boundary [{min_val}, {max_val}]."
+                if num_val < tol_min or num_val > tol_max:
+                    return None, f"Field '{f}' value {num_val} is outside clinical boundary [{min_val}, {max_val}]."
 
             cleaned[f] = num_val
 
@@ -435,10 +466,23 @@ def predict():
             explanations["CAD"] = compute_local_explanation(
                 cad_pipeline, df_patient, reg.background_df, top_n=6
             )
-            # Add top local explanation for LAD
-            lad_pipeline = reg.models["LAD"]
             explanations["LAD"] = compute_local_explanation(
-                lad_pipeline, df_patient, reg.background_df, top_n=6
+                reg.models["LAD"], df_patient, reg.background_df, top_n=6
+            )
+            explanations["LCX"] = compute_local_explanation(
+                reg.models["LCX"], df_patient, reg.background_df, top_n=6
+            )
+            explanations["RCA"] = compute_local_explanation(
+                reg.models["RCA"], df_patient, reg.background_df, top_n=6
+            )
+
+        # Check for non-blocking clinical warnings (e.g. out-of-cohort extrapolation)
+        warnings = []
+        age_val = float(cleaned_data.get("Age", 58))
+        if (18 <= age_val < 30) or (86 < age_val <= 100):
+            warnings.append(
+                f"Patient Age ({int(age_val)}) lies outside the observed training cohort (30–86 yrs). "
+                "Predictions are extrapolated and should be interpreted with clinical caution."
             )
 
         return jsonify({
@@ -450,6 +494,7 @@ def predict():
                 target: list(reg.feature_importances.get("Cath" if target == "CAD" else target, {}).keys())[:5]
                 for target in reg.models.keys()
             },
+            "warnings": warnings,
             "disclaimer": DISCLAIMER_TEXT
         }), 200
 

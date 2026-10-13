@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useMemo } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
-import { Activity, RotateCcw, Info } from 'lucide-react';
+import { Activity, RotateCcw, Info, X } from 'lucide-react';
 import type { VesselVisualization } from '../types/api';
 
 interface HeartViewerProps {
@@ -69,7 +69,7 @@ const AnatomicalHeartGroup: React.FC<AnatomicalHeartGroupProps> = ({
       return vesselColormap[key].color_hex;
     }
     // Baseline clinical distinction prior to running prediction
-    if (key === 'LAD') return '#38bdf8'; // Cyan
+    if (key === 'LAD') return '#22d3ee'; // Electric cyan
     if (key === 'LCX') return '#818cf8'; // Indigo
     return '#fb923c';                    // Coral
   };
@@ -368,8 +368,9 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
               type="button"
               className="inspector-close-btn"
               onClick={() => onSelectVessel(null)}
+              aria-label="Close vessel inspector"
             >
-              ✕
+              <X size={14} />
             </button>
           </div>
 

@@ -1,6 +1,6 @@
 import React from 'react';
 import type { TargetPrediction, PredictionResponse } from '../types/api';
-import { Heart, Activity, AlertCircle, Info } from 'lucide-react';
+import { Heart, Activity, AlertCircle, AlertTriangle, Info } from 'lucide-react';
 
 interface RiskDashboardProps {
   prediction: PredictionResponse | null;
@@ -93,7 +93,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
 
         <div className="risk-card-metric-row">
           <div className="prob-display">
-            <span className="prob-value" style={{ color }}>
+            <span className="prob-value font-tabular" style={{ color }}>
               {probPct}%
             </span>
             <span className="prob-subtext">Est. Probability</span>
@@ -141,6 +141,18 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
           <span>
             Inputs changed since last run — click <strong>Run Analysis</strong> to update.
           </span>
+        </div>
+      )}
+
+      {/* Extrapolation Warning Banner */}
+      {prediction?.warnings && prediction.warnings.length > 0 && (
+        <div className="extrapolation-warning-banner" role="status">
+          <AlertTriangle size={13} className="warning-icon text-amber" />
+          <div className="warning-text-group">
+            {prediction.warnings.map((w, i) => (
+              <span key={i} className="warning-text">{w}</span>
+            ))}
+          </div>
         </div>
       )}
 
