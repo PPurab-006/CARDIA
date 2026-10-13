@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import './App.css';
 import { Header } from './components/Header';
 import { ClinicalForm } from './components/ClinicalForm';
 import { HeartViewer } from './components/HeartViewer';
@@ -23,7 +24,9 @@ import type {
   PredictionResponse,
   FeatureNumericMeta
 } from './types/api';
-import { AlertTriangle, XCircle } from 'lucide-react';
+import { AlertTriangle, XCircle, ClipboardList, Activity, BarChart3 } from 'lucide-react';
+
+type MobileSection = 'form' | 'heart' | 'results';
 
 export const App: React.FC = () => {
   // Backend & Metadata State
@@ -51,6 +54,9 @@ export const App: React.FC = () => {
 
   // 3D Vessel Interaction
   const [selectedVessel, setSelectedVessel] = useState<string | null>(null);
+
+  // Mobile Section Navigation
+  const [mobileSection, setMobileSection] = useState<MobileSection>('form');
 
   // Initial Load: Health, Schema, Sample Patients, Metrics
   const loadHealth = useCallback(async () => {
@@ -194,6 +200,8 @@ export const App: React.FC = () => {
       const result = await predictRisk(formValues);
       setPrediction(result);
       setIsStale(false);
+      // Auto-navigate to results on mobile after successful prediction
+      setMobileSection('results');
     } catch (err: any) {
       console.error('Prediction request failed:', err);
       if (err instanceof ApiError) {
@@ -201,7 +209,6 @@ export const App: React.FC = () => {
       } else {
         setPredictError(err.message || 'Failed to complete cardiovascular risk analysis');
       }
-      // Never wipe form values on error
     } finally {
       setIsPredicting(false);
     }
@@ -224,23 +231,66 @@ export const App: React.FC = () => {
         <div className="top-system-alert">
           <AlertTriangle size={15} />
           <span>
-            <strong>Backend Unreachable:</strong> Flask API is currently offline on <code>localhost:5000</code>. Please start the server using <code>python src/api/app.py</code>.
+            <strong>Backend Unreachable:</strong> Flask API is offline on{' '}
+            <code>localhost:5000</code>. Start with <code>python src/api/app.py</code>.
           </span>
           <button type="button" onClick={loadHealth} className="alert-retry-btn">
-            Retry Connection
+            Retry
           </button>
         </div>
       )}
 
+      {/* Mobile Section Navigator (hidden on desktop) */}
+      <nav className="mobile-section-nav" aria-label="Section Navigation">
+        <div className="mobile-nav-tabs" role="tablist">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mobileSection === 'form'}
+            className={`mobile-nav-tab ${mobileSection === 'form' ? 'active' : ''}`}
+            onClick={() => setMobileSection('form')}
+          >
+            <ClipboardList size={13} />
+            Clinical Input
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mobileSection === 'heart'}
+            className={`mobile-nav-tab ${mobileSection === 'heart' ? 'active' : ''}`}
+            onClick={() => setMobileSection('heart')}
+          >
+            <Activity size={13} />
+            3D Anatomy
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={mobileSection === 'results'}
+            className={`mobile-nav-tab ${mobileSection === 'results' ? 'active' : ''}`}
+            onClick={() => setMobileSection('results')}
+          >
+            <BarChart3 size={13} />
+            Results
+            {prediction && !isStale && (
+              <span className="mobile-result-dot" />
+            )}
+          </button>
+        </div>
+      </nav>
+
       {/* Main 3-Column Workstation Layout */}
       <main className="workstation-main-layout">
         {/* Left Column: Clinical Form & Synthetic Patient Picker */}
-        <section className="workstation-col col-left" aria-label="Clinical Input Features">
+        <section
+          className={`workstation-col col-left ${mobileSection === 'form' ? 'mobile-active' : ''}`}
+          aria-label="Clinical Input Features"
+        >
           <div className="col-panel-card">
             <div className="col-card-header">
               <h2 className="col-card-title">Patient Clinical Features</h2>
               <span className="feature-count-pill">
-                {schema ? `${schema.feature_count} Clean Features` : 'Loading...'}
+                {schema ? `${schema.feature_count} features` : 'Loading…'}
               </span>
             </div>
             <ClinicalForm
@@ -259,14 +309,17 @@ export const App: React.FC = () => {
         </section>
 
         {/* Center Column: 3D Heart Visualizer */}
-        <section className="workstation-col col-center" aria-label="Interactive 3D Heart">
+        <section
+          className={`workstation-col col-center ${mobileSection === 'heart' ? 'mobile-active' : ''}`}
+          aria-label="Interactive 3D Heart"
+        >
           <div className="col-panel-card heart-canvas-card">
             <div className="col-card-header heart-header">
               <div className="title-with-pulse">
                 <span className="live-status-dot" />
                 <h2 className="col-card-title">Interactive Coronary Anatomy (3D)</h2>
               </div>
-              <span className="canvas-hint">Drag to rotate &bull; Scroll to zoom &bull; Click vessel</span>
+              <span className="canvas-hint">Drag · Scroll · Click vessel</span>
             </div>
 
             <HeartViewer
@@ -279,7 +332,10 @@ export const App: React.FC = () => {
         </section>
 
         {/* Right Column: Risk Dashboard & Feature Explanations */}
-        <section className="workstation-col col-right" aria-label="Prediction Results and Explanations">
+        <section
+          className={`workstation-col col-right ${mobileSection === 'results' ? 'mobile-active' : ''}`}
+          aria-label="Prediction Results and Explanations"
+        >
           {predictError && (
             <div className="prediction-error-banner">
               <XCircle size={16} />
@@ -290,7 +346,7 @@ export const App: React.FC = () => {
           {/* Risk Prediction Cards */}
           <div className="col-panel-card risk-card-panel">
             <div className="col-card-header">
-              <h2 className="col-card-title">Cardiovascular Risk Predictions</h2>
+              <h2 className="col-card-title">Risk Predictions</h2>
               {prediction && (
                 <span className="timestamp-pill">Analysis Computed</span>
               )}

@@ -40,8 +40,8 @@
   --text-code: #38bdf8;
 
   /* Typography */
-  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', monospace;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
   /* Geometry & Elevation */
   --radius-sm: 4px;
@@ -116,6 +116,26 @@ html, body {
   position: sticky;
   top: 0;
   z-index: 40;
+  gap: 12px;
+}
+
+@media (max-width: 600px) {
+  .app-header {
+    padding: 0 12px;
+    height: 56px;
+  }
+  .brand-subtitle {
+    display: none;
+  }
+  .prototype-badge {
+    display: none;
+  }
+  .header-action-btn span {
+    display: none;
+  }
+  .header-action-btn {
+    padding: 6px 8px;
+  }
 }
 
 .header-brand-group {
@@ -277,33 +297,8 @@ html, body {
 }
 
 /* ==========================================================================
-   Main 3-Column Workstation Grid
+   Main 3-Column Workstation Grid (layout rules in App.css)
    ========================================================================== */
-
-.workstation-main-layout {
-  display: grid;
-  grid-template-columns: 370px 1fr 390px;
-  gap: 16px;
-  padding: 16px 20px;
-  flex: 1;
-  min-height: 0;
-  box-sizing: border-box;
-}
-
-@media (max-width: 1400px) {
-  .workstation-main-layout {
-    grid-template-columns: 340px 1fr 360px;
-    gap: 12px;
-    padding: 12px 16px;
-  }
-}
-
-@media (max-width: 1100px) {
-  .workstation-main-layout {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
-}
 
 .workstation-col {
   display: flex;
@@ -356,8 +351,9 @@ html, body {
 .clinical-form-panel {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 160px);
-  min-height: 600px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
 
 .sample-patient-dock {
@@ -417,31 +413,39 @@ html, body {
   line-height: 1.3;
 }
 
-/* Category Tabs */
+/* Category Tabs — horizontal scrollable strip */
 .form-category-tabs {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 4px;
-  padding: 8px 12px;
+  display: flex;
+  flex-direction: row;
+  gap: 2px;
+  padding: 6px 10px;
   background: var(--bg-surface);
   border-bottom: 1px solid var(--border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  flex-shrink: 0;
+}
+
+.form-category-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .cat-tab-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 5px;
-  padding: 6px 8px;
+  padding: 5px 10px;
   background: transparent;
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   color: var(--text-secondary);
   font-size: 11px;
+  font-family: var(--font-sans);
   cursor: pointer;
   transition: all 0.15s ease;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex-shrink: 0;
 }
 
 .cat-tab-btn:hover {
@@ -619,10 +623,9 @@ html, body {
    ========================================================================== */
 
 .heart-canvas-card {
-  height: calc(100vh - 160px);
-  min-height: 600px;
   position: relative;
   background: radial-gradient(circle at center, #0d1527 0%, #060912 100%);
+  /* Heights are controlled in App.css per breakpoint */
 }
 
 .heart-header {
@@ -1800,3 +1803,75 @@ html, body {
 .text-emerald { color: var(--risk-low); }
 .text-rose { color: var(--risk-high); }
 .text-slate-muted { color: var(--text-muted); }
+.inline-icon { display: inline; vertical-align: middle; }
+
+/* Mobile result indicator dot */
+.mobile-result-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--risk-low);
+  box-shadow: 0 0 6px var(--risk-low);
+  margin-left: 2px;
+}
+
+/* Field name in form labels */
+.field-name {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+/* Explanations body scroll */
+.explanations-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 14px;
+  overflow-y: auto;
+}
+
+/* local-attributions-container */
+.local-attributions-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* attr-dir-badge */
+.attr-dir-badge {
+  display: flex;
+  align-items: center;
+}
+
+/* ==========================================================================
+   Responsive: Modal tables on mobile
+   ========================================================================== */
+
+@media (max-width: 600px) {
+  .provenance-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  .rationales-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-dialog {
+    max-height: 92vh;
+  }
+}
+
+/* ==========================================================================
+   Ensure right-col panels have fixed heights with internal scroll
+   ========================================================================== */
+
+.risk-card-panel .risk-dashboard-container {
+  overflow-y: auto;
+}
+
+.explanations-card-panel .feature-explanations-card {
+  height: 100%;
+  overflow: hidden;
+}
+
+.explanations-card-panel .feature-explanations-card .explanations-body {
+  flex: 1;
+  overflow-y: auto;
+}

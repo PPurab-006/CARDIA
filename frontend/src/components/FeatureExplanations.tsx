@@ -7,17 +7,26 @@ interface FeatureExplanationsProps {
   loading: boolean;
 }
 
+type ExplanationTarget = 'CAD' | 'LAD' | 'LCX' | 'RCA';
+
+const TARGET_LABELS: Record<ExplanationTarget, string> = {
+  CAD: 'CAD',
+  LAD: 'LAD',
+  LCX: 'LCX',
+  RCA: 'RCA'
+};
+
 export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
   prediction,
   loading
 }) => {
-  const [activeTab, setActiveTab] = useState<'CAD' | 'LAD'>('CAD');
+  const [activeTab, setActiveTab] = useState<ExplanationTarget>('CAD');
 
   if (!prediction && !loading) {
     return (
       <div className="explanations-empty">
-        <BarChart3 size={24} className="text-slate-muted" />
-        <p className="empty-subtext">Feature attributions appear here following prediction analysis.</p>
+        <BarChart3 size={22} className="text-slate-muted" />
+        <p className="empty-subtext">Feature attributions appear here after analysis.</p>
       </div>
     );
   }
@@ -34,26 +43,25 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
       <div className="explanations-header">
         <div className="header-title-row">
           <div className="title-with-icon">
-            <BarChart3 size={16} className="text-cyan" />
-            <h4 className="explanations-title">Feature Attribution & Interpretability</h4>
+            <BarChart3 size={14} className="text-cyan" />
+            <h4 className="explanations-title">Feature Attribution</h4>
           </div>
 
-          {/* Target Tabs */}
-          <div className="target-toggle-pills">
-            <button
-              type="button"
-              className={`toggle-pill ${activeTab === 'CAD' ? 'active' : ''}`}
-              onClick={() => setActiveTab('CAD')}
-            >
-              Overall CAD
-            </button>
-            <button
-              type="button"
-              className={`toggle-pill ${activeTab === 'LAD' ? 'active' : ''}`}
-              onClick={() => setActiveTab('LAD')}
-            >
-              LAD Stenosis
-            </button>
+          {/* Target Tabs — all four targets */}
+          <div className="target-toggle-pills" role="tablist" aria-label="Explanation target">
+            {(Object.keys(TARGET_LABELS) as ExplanationTarget[]).map((tab) => (
+              <button
+                key={tab}
+                type="button"
+                role="tab"
+                aria-selected={activeTab === tab}
+                className={`toggle-pill ${activeTab === tab ? 'active' : ''}`}
+                onClick={() => setActiveTab(tab)}
+                title={TARGET_LABELS[tab]}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
         </div>
       </div>
@@ -61,20 +69,22 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
       <div className="explanations-body">
         {/* Methodology & Attribution Caveat */}
         <div className="attribution-caveat-box">
-          <HelpCircle size={14} className="caveat-icon text-cyan" />
+          <HelpCircle size={12} className="caveat-icon text-cyan" aria-hidden="true" />
           <p className="caveat-text">
-            <strong>Attribution vs. Causation:</strong> Scores reflect local tree model feature contributions (computed via tree-path surrogate / SHAP-approximation). A positive contribution indicates that this patient's value elevated the model's output probability; it does <strong>not</strong> establish biological causation or a treatable clinical cause.
+            <strong>Attribution ≠ Causation.</strong> Scores reflect local tree-path contributions
+            (SHAP-approximation) for this patient. A positive score elevated the model's output
+            for target <strong>{activeTab}</strong>.
           </p>
         </div>
 
         {/* Patient-Specific Local Explanations */}
         <div className="local-attributions-container">
           <h5 className="sub-section-title">
-            Patient-Specific Local Contributions ({activeTab} Target)
+            Local Contributions — {activeTab}
           </h5>
 
           {currentItems.length === 0 ? (
-            <p className="no-data-hint">No local attributions returned for this target.</p>
+            <p className="no-data-hint">No attributions returned for {activeTab}.</p>
           ) : (
             <div className="attribution-bars-list">
               {currentItems.map((item, idx) => {
@@ -87,24 +97,24 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
                       <div className="attr-feature-name">
                         <span className="feature-title">{item.feature}</span>
                         {item.patient_value !== null && (
-                          <span className="patient-val-badge">Val: {item.patient_value}</span>
+                          <span className="patient-val-badge">= {item.patient_value}</span>
                         )}
                       </div>
                       <div className="attr-dir-badge">
                         {isRiskInc ? (
                           <span className="dir-indicator risk-up">
-                            <TrendingUp size={11} /> Elevates Risk
+                            <TrendingUp size={10} /> Elevates
                           </span>
                         ) : (
                           <span className="dir-indicator risk-down">
-                            <TrendingDown size={11} /> Lowers Risk
+                            <TrendingDown size={10} /> Lowers
                           </span>
                         )}
                       </div>
                     </div>
 
                     <div className="attr-bar-col">
-                      <div className="attr-bar-track">
+                      <div className="attr-bar-track" aria-hidden="true">
                         <div
                           className={`attr-bar-fill ${isRiskInc ? 'fill-danger' : 'fill-protective'}`}
                           style={{ width: `${Math.max(6, pct)}%` }}
@@ -125,8 +135,8 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
         {globalTop.length > 0 && (
           <div className="global-importance-footer">
             <div className="global-header">
-              <Layers size={13} className="text-slate-muted" />
-              <span className="global-label">Top Global Features in Trained {activeTab} Model:</span>
+              <Layers size={11} className="text-slate-muted" aria-hidden="true" />
+              <span className="global-label">Top global features — {activeTab} model:</span>
             </div>
             <div className="global-pills-wrap">
               {globalTop.slice(0, 6).map((feat, i) => (

@@ -16,6 +16,7 @@ import {
   Sparkles,
   RotateCcw,
   AlertCircle,
+  AlertTriangle,
   Play
 } from 'lucide-react';
 
@@ -35,86 +36,55 @@ interface ClinicalFormProps {
 // ---------------------------------------------------------------------------
 // Clinical Domain Groupings for the 54 Alizadeh-Sani features
 // ---------------------------------------------------------------------------
-const CATEGORY_MAP: Record<string, { label: string; icon: React.ReactNode; features: string[] }> = {
+const CATEGORY_MAP: Record<string, { label: string; shortLabel: string; icon: React.ReactNode; features: string[] }> = {
   demographics: {
     label: 'Demographics & Vitals',
-    icon: <User size={15} />,
+    shortLabel: 'Demographics',
+    icon: <User size={13} />,
     features: ['Age', 'Sex', 'Weight', 'Length', 'BMI', 'BP', 'PR']
   },
   history: {
     label: 'Cardiovascular History',
-    icon: <HeartPulse size={15} />,
+    shortLabel: 'Hx',
+    icon: <HeartPulse size={13} />,
     features: [
-      'DM',
-      'HTN',
-      'Current Smoker',
-      'EX-Smoker',
-      'FH',
-      'Obesity',
-      'DLP',
-      'CRF',
-      'CVA',
-      'CHF',
-      'Airway disease',
-      'Thyroid Disease'
+      'DM', 'HTN', 'Current Smoker', 'EX-Smoker', 'FH',
+      'Obesity', 'DLP', 'CRF', 'CVA', 'CHF', 'Airway disease', 'Thyroid Disease'
     ]
   },
   symptoms: {
     label: 'Symptoms & Bedside Exam',
-    icon: <Stethoscope size={15} />,
+    shortLabel: 'Symptoms',
+    icon: <Stethoscope size={13} />,
     features: [
-      'Typical Chest Pain',
-      'Atypical',
-      'Nonanginal',
-      'LowTH Ang',
-      'Dyspnea',
-      'Function Class',
-      'Edema',
-      'Weak Peripheral Pulse',
-      'Lung rales',
-      'Systolic Murmur',
-      'Diastolic Murmur'
+      'Typical Chest Pain', 'Atypical', 'Nonanginal', 'LowTH Ang',
+      'Dyspnea', 'Function Class', 'Edema', 'Weak Peripheral Pulse',
+      'Lung rales', 'Systolic Murmur', 'Diastolic Murmur'
     ]
   },
   ecg: {
     label: 'Electrocardiogram (ECG)',
-    icon: <Activity size={15} />,
-    features: [
-      'Q Wave',
-      'St Elevation',
-      'St Depression',
-      'Tinversion',
-      'LVH',
-      'Poor R Progression',
-      'BBB'
-    ]
+    shortLabel: 'ECG',
+    icon: <Activity size={13} />,
+    features: ['Q Wave', 'St Elevation', 'St Depression', 'Tinversion', 'LVH', 'Poor R Progression', 'BBB']
   },
   labs: {
     label: 'Laboratory Biochemistry',
-    icon: <FlaskConical size={15} />,
-    features: [
-      'FBS',
-      'CR',
-      'TG',
-      'LDL',
-      'HDL',
-      'BUN',
-      'ESR',
-      'HB',
-      'K',
-      'Na',
-      'WBC',
-      'Lymph',
-      'Neut',
-      'PLT'
-    ]
+    shortLabel: 'Labs',
+    icon: <FlaskConical size={13} />,
+    features: ['FBS', 'CR', 'TG', 'LDL', 'HDL', 'BUN', 'ESR', 'HB', 'K', 'Na', 'WBC', 'Lymph', 'Neut', 'PLT']
   },
   echo: {
     label: 'Echocardiography (TTE)',
-    icon: <Radio size={15} />,
+    shortLabel: 'Echo',
+    icon: <Radio size={13} />,
     features: ['EF-TTE', 'Region RWMA', 'VHD']
   }
 };
+
+// Age cohort: dataset spans ages ~30–86, warn if outside that range
+const AGE_COHORT_MIN = 30;
+const AGE_COHORT_MAX = 86;
 
 export const ClinicalForm: React.FC<ClinicalFormProps> = ({
   schema,
@@ -179,14 +149,20 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
 
   const hasErrors = Object.keys(validationErrors).length > 0;
 
+  // Age cohort warning (non-blocking)
+  const ageVal = Number(formValues['Age']);
+  const showAgeCohortWarning =
+    !isNaN(ageVal) && ageVal >= 18 && ageVal <= 100 &&
+    (ageVal < AGE_COHORT_MIN || ageVal > AGE_COHORT_MAX);
+
   return (
     <div className="clinical-form-panel">
       {/* Sample Patient Loader */}
       <div className="sample-patient-dock">
         <div className="sample-dock-header">
           <div className="dock-title-group">
-            <Sparkles size={14} className="text-cyan" />
-            <span className="dock-title">Load Synthetic Clinical Profile</span>
+            <Sparkles size={13} className="text-cyan" />
+            <span className="dock-title">Synthetic Profile</span>
           </div>
           <span className="synthetic-badge">Illustration Only</span>
         </div>
@@ -204,21 +180,21 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
           aria-label="Load synthetic clinical profile"
         >
           <option value="" disabled>
-            -- Select a synthetic illustration profile --
+            — Select a synthetic profile —
           </option>
           {samplePatients?.samples.map((sample) => (
             <option key={sample.id} value={sample.id}>
-              {sample.label} &mdash; {sample.summary}
+              {sample.label} — {sample.summary}
             </option>
           ))}
         </select>
         <p className="synthetic-disclaimer-micro">
-          Synthetic profiles illustrate pipeline behavior. They do not represent real individuals.
+          Synthetic profiles illustrate pipeline behavior only — not real patients.
         </p>
       </div>
 
-      {/* Category Tabs */}
-      <div className="form-category-tabs" role="tablist">
+      {/* Category Tabs — horizontal scroll row */}
+      <div className="form-category-tabs" role="tablist" aria-label="Clinical feature categories">
         {Object.entries(CATEGORY_MAP).map(([key, cat]) => {
           const count = categorizedFeatures[key]?.length || 0;
           if (count === 0) return null;
@@ -235,11 +211,12 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
               aria-selected={isActive}
               className={`cat-tab-btn ${isActive ? 'active' : ''} ${hasErrorInCat ? 'has-error' : ''}`}
               onClick={() => setActiveCategory(key)}
+              title={cat.label}
             >
               <span className="tab-icon">{cat.icon}</span>
-              <span className="tab-label">{cat.label}</span>
+              <span className="tab-label">{cat.shortLabel}</span>
               {hasErrorInCat ? (
-                <span className="tab-err-dot" title="Validation errors in this category" />
+                <span className="tab-err-dot" title="Validation errors" />
               ) : (
                 <span className="tab-count">{count}</span>
               )}
@@ -253,7 +230,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
         {!schema ? (
           <div className="form-loading-placeholder">
             <span className="spinner" />
-            <span>Loading feature schema from backend...</span>
+            <span>Loading feature schema…</span>
           </div>
         ) : (
           <div className="fields-grid">
@@ -268,7 +245,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
                 return (
                   <div key={featName} className={`form-field-group ${error ? 'field-error' : ''}`}>
                     <label className="field-label" htmlFor={`field-${featName}`}>
-                      <span>{featName}</span>
+                      <span className="field-name">{featName}</span>
                     </label>
                     <select
                       id={`field-${featName}`}
@@ -290,13 +267,14 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
               // Numeric Feature
               const numMeta = meta as FeatureNumericMeta;
               const step = numMeta.max > 100 ? '1' : numMeta.max > 10 ? '0.1' : '0.01';
+              const isAgeField = featName === 'Age';
 
               return (
                 <div key={featName} className={`form-field-group ${error ? 'field-error' : ''}`}>
                   <label className="field-label" htmlFor={`field-${featName}`}>
-                    <span>{featName}</span>
+                    <span className="field-name">{featName}</span>
                     <span className="field-bounds-hint">
-                      [{numMeta.min} &ndash; {numMeta.max}]
+                      [{numMeta.min}–{numMeta.max}]
                     </span>
                   </label>
                   <input
@@ -311,6 +289,16 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
                     onChange={(e) => handleFieldChange(featName, e.target.value, 'numeric')}
                   />
                   {error && <span className="field-err-msg">{error}</span>}
+                  {/* Age cohort warning (non-blocking) */}
+                  {isAgeField && showAgeCohortWarning && (
+                    <div className="age-cohort-warning" role="note">
+                      <AlertTriangle size={12} />
+                      <span>
+                        Age {ageVal} is outside the training cohort range (30–86 yrs). Predictions
+                        are extrapolated and may be less reliable.
+                      </span>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -321,9 +309,11 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
       {/* Global Validation Banner if any errors exist */}
       {hasErrors && (
         <div className="form-validation-summary">
-          <AlertCircle size={14} className="text-rose" />
+          <AlertCircle size={13} />
           <span>
-            {Object.keys(validationErrors).length} feature(s) exceed valid dataset ranges. Please correct highlighted values before analysis.
+            {Object.keys(validationErrors).length} field
+            {Object.keys(validationErrors).length > 1 ? 's' : ''} exceed valid range. Correct
+            highlighted values before running analysis.
           </span>
         </div>
       )}
@@ -337,7 +327,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
           disabled={isLoading}
           title="Reset all fields to dataset defaults"
         >
-          <RotateCcw size={14} />
+          <RotateCcw size={13} />
           <span>Reset</span>
         </button>
 
@@ -346,15 +336,16 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
           className="btn-form-submit"
           onClick={onSubmit}
           disabled={isLoading || hasErrors || !schema}
+          aria-busy={isLoading}
         >
           {isLoading ? (
             <>
               <span className="spinner-sm" />
-              <span>Analyzing Risk...</span>
+              <span>Analyzing…</span>
             </>
           ) : (
             <>
-              <Play size={15} fill="currentColor" />
+              <Play size={14} fill="currentColor" />
               <span>Run Analysis</span>
             </>
           )}
