@@ -5,6 +5,18 @@
 
 ---
 
+## 0. Running the Server
+
+To launch the Flask backend API:
+```bash
+cd "/home/purab/Purab/Projects/competitions/multimodal cardio"
+source .venv/bin/activate
+PYTHONPATH=. python src/api/app.py
+```
+By default, the server listens on `http://0.0.0.0:5000` (or the port set by the `PORT` environment variable).
+
+---
+
 ## 1. Overview & Disclaimer
 
 This API serves calibrated prediction probabilities for overall Coronary Artery Disease (CAD) and vessel-specific stenosis ($\ge 50\%$) for the **Left Anterior Descending (LAD)**, **Left Circumflex (LCX)**, and **Right Coronary Artery (RCA)**.

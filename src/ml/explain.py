@@ -58,7 +58,8 @@ def compute_local_explanation(
     classifier = fitted_pipeline.named_steps["classifier"]
     preprocessor = fitted_pipeline.named_steps["preprocessor"]
 
-    base_proba = float(fitted_pipeline.predict_proba(patient_row)[0, 1])
+    pos_idx = list(classifier.classes_).index(1) if hasattr(classifier, "classes_") else 1
+    base_proba = float(fitted_pipeline.predict_proba(patient_row)[0, pos_idx])
 
     attributions = []
 
@@ -99,7 +100,7 @@ def compute_local_explanation(
             else:
                 perturbed[col] = background_df[col].mode().iloc[0]
             
-            alt_proba = float(fitted_pipeline.predict_proba(perturbed)[0, 1])
+            alt_proba = float(fitted_pipeline.predict_proba(perturbed)[0, pos_idx])
             diff = base_proba - alt_proba  # positive means this feature pushed risk up
 
             attributions.append({
