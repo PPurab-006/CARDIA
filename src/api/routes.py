@@ -160,6 +160,18 @@ def get_schema():
     }), 200
 
 
+@api_bp.route("/metrics", methods=["GET"])
+def get_metrics():
+    """Returns cross-validated performance metrics for all four selected target models."""
+    reg = get_registry()
+    return jsonify({
+        "status": "success",
+        "validation_method": "Stratified 5-Fold Cross-Validation (Inside-Fold Fitting)",
+        "cohort_size": 303,
+        "metrics": reg.selected_metrics
+    }), 200
+
+
 @api_bp.route("/sample-patients", methods=["GET"])
 def get_sample_patients():
     """Returns illustrative synthetic patient profiles for prototyping."""

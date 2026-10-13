@@ -63,6 +63,22 @@ def test_schema_endpoint(client):
         assert target in data["targets"]
 
 
+def test_metrics_endpoint(client):
+    """Verify /api/metrics returns cross-validation evaluation results for all 4 targets."""
+    res = client.get("/api/metrics")
+    assert res.status_code == 200
+    data = res.get_json()
+    assert data["status"] == "success"
+    assert data["cohort_size"] == 303
+    assert "metrics" in data
+    for target in ["Cath", "LAD", "LCX", "RCA"]:
+        assert target in data["metrics"]
+        m = data["metrics"][target]["metrics"]
+        assert "accuracy" in m
+        assert "roc_auc" in m
+        assert "f1" in m
+
+
 def test_sample_patients_endpoint(client):
     """Verify /api/sample-patients returns labeled illustrative synthetic profiles."""
     res = client.get("/api/sample-patients")
