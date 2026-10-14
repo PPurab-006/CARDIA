@@ -43,8 +43,8 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
       <div className="explanations-header">
         <div className="header-title-row">
           <div className="title-with-icon">
-            <BarChart3 size={14} className="text-cyan" />
-            <h4 className="explanations-title">Feature Attribution</h4>
+            <BarChart3 size={14} className="text-acid" />
+            <h4 className="explanations-title">[ SHAP ATTRIBUTION ]</h4>
           </div>
 
           {/* Target Tabs — all four targets */}
@@ -59,7 +59,7 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
                 onClick={() => setActiveTab(tab)}
                 title={TARGET_LABELS[tab]}
               >
-                {tab}
+                [{tab}]
               </button>
             ))}
           </div>
@@ -69,18 +69,16 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
       <div className="explanations-body">
         {/* Methodology & Attribution Caveat */}
         <div className="attribution-caveat-box">
-          <HelpCircle size={12} className="caveat-icon text-cyan" aria-hidden="true" />
+          <HelpCircle size={12} className="caveat-icon text-acid" aria-hidden="true" />
           <p className="caveat-text">
-            <strong>Attribution ≠ Causation.</strong> Scores reflect local tree-path contributions
-            (SHAP-approximation) for this patient. A positive score elevated the model's output
-            for target <strong>{activeTab}</strong>.
+            <strong>ATTRIBUTION NOTE:</strong> Scores reflect local tree-path contributions (SHAP approximation) for this profile. Elevated scores increase model output for target <strong>[{activeTab}]</strong>.
           </p>
         </div>
 
         {/* Patient-Specific Local Explanations */}
         <div className="local-attributions-container">
           <h5 className="sub-section-title">
-            Local Contributions — {activeTab}
+            LOCAL TREE CONTRIBUTIONS // TARGET: [{activeTab}]
           </h5>
 
           {currentItems.length === 0 ? (
@@ -97,17 +95,17 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
                       <div className="attr-feature-name">
                         <span className="feature-title">{item.feature}</span>
                         {item.patient_value !== null && (
-                          <span className="patient-val-badge">= {item.patient_value}</span>
+                          <span className="patient-val-badge">={item.patient_value}</span>
                         )}
                       </div>
                       <div className="attr-dir-badge">
                         {isRiskInc ? (
                           <span className="dir-indicator risk-up">
-                            <TrendingUp size={10} /> Elevates
+                            <TrendingUp size={10} /> +ELEVATES
                           </span>
                         ) : (
                           <span className="dir-indicator risk-down">
-                            <TrendingDown size={10} /> Lowers
+                            <TrendingDown size={10} /> -LOWERS
                           </span>
                         )}
                       </div>
@@ -120,7 +118,7 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
                           style={{ width: `${Math.max(6, pct)}%` }}
                         />
                       </div>
-                      <span className="attr-score-text">
+                      <span className="attr-score-text font-mono">
                         {(item.contribution_score * 100).toFixed(1)}%
                       </span>
                     </div>
@@ -135,8 +133,8 @@ export const FeatureExplanations: React.FC<FeatureExplanationsProps> = ({
         {globalTop.length > 0 && (
           <div className="global-importance-footer">
             <div className="global-header">
-              <Layers size={11} className="text-slate-muted" aria-hidden="true" />
-              <span className="global-label">Top global features — {activeTab} model:</span>
+              <Layers size={11} className="text-muted" aria-hidden="true" />
+              <span className="global-label">GLOBAL COVARIATES // [{activeTab}] MODEL:</span>
             </div>
             <div className="global-pills-wrap">
               {globalTop.slice(0, 6).map((feat, i) => (

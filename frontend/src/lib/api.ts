@@ -6,7 +6,9 @@ import type {
   MetricsResponse
 } from '../types/api';
 
-const API_BASE = import.meta.env.VITE_API_URL || '/api';
+const rawApiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api';
+const cleanBase = rawApiBase.replace(/\/+$/, '');
+const API_BASE = cleanBase.endsWith('/api') || cleanBase === '/api' ? cleanBase : `${cleanBase}/api`;
 
 export class ApiError extends Error {
   errorCode?: string;

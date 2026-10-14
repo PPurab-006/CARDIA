@@ -302,35 +302,35 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
 
       {/* Top Overlay Controls Bar */}
       <div className="viewer-controls-bar">
-        <div className="viewer-title-group">
+        <div className="viewer-controls-top-row">
           <div className="viewer-badge-row">
-            <span className="viewer-badge">BODYPARTS3D ANATOMICAL RESOURCE</span>
-            <span className="cc-license-tag">CC BY-SA 2.1 JP</span>
+            <span className="viewer-badge">[ BODYPARTS3D ]</span>
+            <span className="cc-license-tag">[ CC BY-SA 2.1 JP ]</span>
           </div>
-          <span className="viewer-subtext">
-            Authentic human cardiac geometry &bull; Click any coronary vessel to inspect
-          </span>
+          <div className="viewer-actions">
+            <button
+              type="button"
+              className={`viewer-btn ${isPulsing ? 'active' : ''}`}
+              onClick={() => setIsPulsing(!isPulsing)}
+              title="Toggle Cardiac Contraction Motion"
+            >
+              <Activity size={12} />
+              <span>[ PULSE: {isPulsing ? 'ON' : 'OFF'} ]</span>
+            </button>
+            <button
+              type="button"
+              className="viewer-btn"
+              onClick={resetView}
+              title="Reset Camera View to Standard Coronal Projection"
+            >
+              <RotateCcw size={12} />
+              <span>[ RESET ]</span>
+            </button>
+          </div>
         </div>
-        <div className="viewer-actions">
-          <button
-            type="button"
-            className={`viewer-btn ${isPulsing ? 'active' : ''}`}
-            onClick={() => setIsPulsing(!isPulsing)}
-            title="Toggle Cardiac Contraction Motion"
-          >
-            <Activity size={15} />
-            <span>{isPulsing ? 'Pulse On' : 'Paused'}</span>
-          </button>
-          <button
-            type="button"
-            className="viewer-btn"
-            onClick={resetView}
-            title="Reset Camera View to Standard Coronal Projection"
-          >
-            <RotateCcw size={15} />
-            <span>Reset View</span>
-          </button>
-        </div>
+        <span className="viewer-subtext">
+          Human cardiac geometry &bull; Click coronary vessel to inspect
+        </span>
       </div>
 
       {/* Vessel Quick Select Buttons */}
@@ -350,7 +350,7 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
             >
               <span className="vessel-dot" style={{ backgroundColor: color }} />
               <span className="vessel-code">{key}</span>
-              <span className="vessel-prob">{probStr}</span>
+              <span className="vessel-prob font-mono">{probStr}</span>
             </button>
           );
         })}
@@ -361,7 +361,7 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
         <div className="vessel-inspector-card">
           <div className="inspector-header">
             <div>
-              <span className="inspector-tag">{vesselDetails.key} BRANCH &bull; {vesselDetails.fma}</span>
+              <span className="inspector-tag">[ {vesselDetails.key} // {vesselDetails.fma} ]</span>
               <h4 className="inspector-title">{vesselDetails.name}</h4>
             </div>
             <button
@@ -376,9 +376,9 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
 
           <div className="inspector-body">
             <div className="inspector-metric-row">
-              <span className="metric-label">Predicted Stenosis Likelihood</span>
+              <span className="metric-label">PREDICTED STENOSIS LIKELIHOOD</span>
               <span className="metric-val" style={{ color: vesselDetails.colorHex }}>
-                {(vesselDetails.probability * 100).toFixed(1)}% ({vesselDetails.riskLevel})
+                {(vesselDetails.probability * 100).toFixed(1)}% ({vesselDetails.riskLevel.toUpperCase()})
               </span>
             </div>
 
@@ -397,7 +397,7 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
 
             <div className="inspector-meta-grid">
               <div>
-                <span className="meta-k">Model Architecture:</span>
+                <span className="meta-k">MODEL:</span>
                 <span className="meta-v">{vesselDetails.model}</span>
               </div>
               <div>
@@ -405,7 +405,7 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
                 <span className="meta-v">{vesselDetails.cvAuc}</span>
               </div>
               <div>
-                <span className="meta-k">Anatomical Source:</span>
+                <span className="meta-k">GEOMETRY:</span>
                 <span className="meta-v">BodyParts3D (DBCLS)</span>
               </div>
             </div>
@@ -416,25 +416,25 @@ export const HeartViewer: React.FC<HeartViewerProps> = ({
       {/* Color Scale Legend & Statutory Anatomical Honesty Note */}
       <div className="viewer-bottom-bar">
         <div className="color-scale-legend">
-          <span className="legend-title">Stenosis Likelihood Scale:</span>
+          <span className="legend-title">[ COLORMAP ]:</span>
           <div className="scale-item">
             <span className="scale-swatch" style={{ backgroundColor: '#10b981' }} />
-            <span>&lt;30% (Low)</span>
+            <span>&lt;30% (LOW)</span>
           </div>
           <div className="scale-item">
             <span className="scale-swatch" style={{ backgroundColor: '#f59e0b' }} />
-            <span>30–60% (Moderate)</span>
+            <span>30–60% (MOD)</span>
           </div>
           <div className="scale-item">
             <span className="scale-swatch" style={{ backgroundColor: '#ef4444' }} />
-            <span>&gt;60% (High)</span>
+            <span>&gt;60% (HIGH)</span>
           </div>
         </div>
 
         <div className="anatomical-honesty-note">
           <Info size={13} className="info-icon" />
           <span>
-            BodyParts3D anatomical reference mesh (© DBCLS CC BY-SA 2.1 Japan). Segmented LAD, LCX & RCA vessels. Vessel colors reflect model-predicted stenosis likelihoods (≥50% narrowing), not observed patient plaque coordinates.
+            BodyParts3D anatomical reference mesh (© DBCLS CC BY-SA 2.1 Japan). Segmented LAD, LCX &amp; RCA vessels. Vessel colors reflect model-predicted stenosis likelihoods (≥50% narrowing), not observed patient plaque coordinates.
           </span>
         </div>
       </div>

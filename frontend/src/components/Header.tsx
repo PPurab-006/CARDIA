@@ -25,26 +25,27 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="app-header">
       <div className="header-brand-group">
         <div className="header-logo-container">
-          <div className="header-logo-pulse">
-            <Activity size={22} className="logo-icon" />
+          <div className="header-logo-block">
+            <Activity size={20} className="logo-icon" />
           </div>
-          <div>
+          <div className="brand-text-block">
             <div className="brand-title-row">
-              <h1 className="brand-name">CARDIA</h1>
+              <span className="brand-name">CARDIA</span>
+              <span className="brand-version-tag">ML-SYS // V1.0</span>
               <span className="prototype-badge">
-                <ShieldCheck size={12} />
-                Educational Prototype
+                <ShieldCheck size={11} />
+                NON-DIAGNOSTIC PROTO
               </span>
             </div>
             <p className="brand-subtitle">
-              Cardiovascular Risk Visualization & Multi-Vessel Stenosis AI Workstation
+              Cardiovascular Risk Prediction &amp; 3D Coronary Arborization Visualizer
             </p>
           </div>
         </div>
       </div>
 
       <div className="header-controls-group">
-        {/* Backend Connectivity Status */}
+        {/* Real Backend Connectivity Status */}
         <button
           type="button"
           onClick={onRecheckHealth}
@@ -55,17 +56,17 @@ export const Header: React.FC<HeaderProps> = ({
             <>
               <span className="status-ping" />
               <Wifi size={13} />
-              <span>Backend Connected</span>
+              <span className="status-text">SYS.API // ONLINE</span>
             </>
           ) : healthLoading ? (
             <>
               <RefreshCw size={13} className="spin" />
-              <span>Checking API...</span>
+              <span className="status-text">CHECKING API...</span>
             </>
           ) : (
             <>
               <WifiOff size={13} />
-              <span>API Offline</span>
+              <span className="status-text">API // OFFLINE</span>
             </>
           )}
         </button>
@@ -77,19 +78,19 @@ export const Header: React.FC<HeaderProps> = ({
           className="header-action-btn"
           title="Inspect cross-validation metrics across all 4 targets"
         >
-          <BarChart2 size={15} />
-          <span>Model Evaluation</span>
+          <BarChart2 size={14} />
+          <span>[ MODEL EVALUATION ]</span>
         </button>
 
         {/* Reset Patient Form */}
         <button
           type="button"
           onClick={onResetForm}
-          className="header-action-btn"
+          className="header-action-btn btn-reset"
           title="Reset all patient input features to cohort baseline defaults"
         >
-          <RefreshCw size={14} />
-          <span>Reset Patient</span>
+          <RefreshCw size={13} />
+          <span>[ RESET PATIENT ]</span>
         </button>
       </div>
     </header>

@@ -21,11 +21,10 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
     return (
       <div className="risk-dashboard-empty">
         <div className="empty-content">
-          <Heart size={28} className="text-slate-muted" />
-          <h3 className="empty-title">Awaiting Analysis</h3>
+          <Heart size={26} className="text-muted" />
+          <h3 className="empty-title">[ AWAITING INFERENCE ]</h3>
           <p className="empty-text">
-            Configure patient features and click <strong>Run Analysis</strong> to compute
-            multi-vessel CAD risk predictions.
+            Configure patient clinical features and click <strong>[ RUN MULTI-VESSEL ANALYSIS ]</strong> to compute multi-vessel CAD risk.
           </p>
         </div>
       </div>
@@ -76,35 +75,35 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
       >
         <div className="risk-card-header">
           <div className="risk-card-title-group">
-            <span className="target-code-tag">{key}</span>
+            <span className="target-code-tag">[{key}]</span>
             <span className="target-title-text">{title}</span>
           </div>
           <span
             className="risk-badge"
             style={{
-              backgroundColor: `${color}20`,
+              backgroundColor: `${color}18`,
               color: color,
-              borderColor: `${color}50`
+              borderColor: color
             }}
           >
-            {target.risk_label}
+            {target.risk_label.toUpperCase()}
           </span>
         </div>
 
         <div className="risk-card-metric-row">
           <div className="prob-display">
-            <span className="prob-value font-tabular" style={{ color }}>
+            <span className="prob-value font-mono font-bold" style={{ color }}>
               {probPct}%
             </span>
-            <span className="prob-subtext">Est. Probability</span>
+            <span className="prob-subtext">PREDICTED PROBABILITY</span>
           </div>
 
           <div className="classification-display">
-            <span className="class-label">Model Class:</span>
+            <span className="class-label">CLASSIFICATION:</span>
             <span className={`class-value ${target.predicted_class === 1 ? 'positive' : 'negative'}`}>
               {target.predicted_class === 1
-                ? isVessel ? 'Stenosis ≥50%' : 'CAD Positive'
-                : isVessel ? 'Normal <50%' : 'Normal'}
+                ? isVessel ? 'STENOSIS ≥50%' : 'CAD POSITIVE'
+                : isVessel ? 'NORMAL <50%' : 'NORMAL'}
             </span>
           </div>
         </div>
@@ -123,7 +122,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
         <div className="risk-card-footer">
           <span className="model-spec">
             <Activity size={10} className="inline-icon" />
-            {target.model_architecture}
+            MODEL: {target.model_architecture}
           </span>
           {target.cv_roc_auc && (
             <span className="auc-spec">CV AUC: {(target.cv_roc_auc * 100).toFixed(1)}%</span>
@@ -139,7 +138,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
         <div className="stale-warning-banner">
           <AlertCircle size={13} />
           <span>
-            Inputs changed since last run — click <strong>Run Analysis</strong> to update.
+            <strong>INPUTS MODIFIED // </strong> Inference stale — click <strong>[ RUN MULTI-VESSEL ANALYSIS ]</strong> to update.
           </span>
         </div>
       )}
@@ -150,7 +149,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
           <AlertTriangle size={13} className="warning-icon text-amber" />
           <div className="warning-text-group">
             {prediction.warnings.map((w, i) => (
-              <span key={i} className="warning-text">{w}</span>
+              <span key={i} className="warning-text"><strong>[ WARNING ]:</strong> {w}</span>
             ))}
           </div>
         </div>
@@ -164,8 +163,8 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
       {/* Multi-Vessel Stenosis Section */}
       <div className="vessel-predictions-section">
         <div className="section-header-row">
-          <h4 className="vessel-section-title">Vessel-Specific Stenosis (≥50% Diameter)</h4>
-          <span className="vessel-sub-hint">Click to highlight in 3D</span>
+          <h4 className="vessel-section-title">VESSEL-SPECIFIC STENOSIS (≥50% DIAMETER)</h4>
+          <span className="vessel-sub-hint">[ CLICK TO HIGHLIGHT IN 3D ]</span>
         </div>
 
         <div className="vessel-cards-grid">
@@ -179,7 +178,7 @@ export const RiskDashboard: React.FC<RiskDashboardProps> = ({
       <div className="risk-methodology-note">
         <Info size={12} className="info-icon" aria-hidden="true" />
         <p>
-          <strong>Calibration:</strong> Risk scores from n=303 cohort. Bands (&lt;30%/30–60%/&gt;60%)
+          <strong>CALIBRATION NOTE:</strong> Risk scores from n=303 cohort. Bands (&lt;30%/30–60%/&gt;60%)
           are illustrative tiers, not validated clinical decision thresholds.
         </p>
       </div>

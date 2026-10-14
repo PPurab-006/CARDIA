@@ -175,10 +175,10 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
       <div className="sample-patient-dock">
         <div className="sample-dock-header">
           <div className="dock-title-group">
-            <Sparkles size={13} className="text-cyan" />
-            <span className="dock-title">Synthetic Profile</span>
+            <Sparkles size={13} className="text-acid" />
+            <span className="dock-title">SYNTHETIC CLINICAL PROFILE</span>
           </div>
-          <span className="synthetic-badge">Illustration Only</span>
+          <span className="synthetic-badge">[ DEMO COHORT ]</span>
         </div>
 
         <select
@@ -194,7 +194,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
           aria-label="Load synthetic clinical profile"
         >
           <option value="" disabled>
-            — Select a synthetic profile —
+            — SELECT A SYNTHETIC PATIENT PROFILE —
           </option>
           {samplePatients?.samples.map((sample) => (
             <option key={sample.id} value={sample.id}>
@@ -203,7 +203,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
           ))}
         </select>
         <p className="synthetic-disclaimer-micro">
-          Synthetic profiles illustrate pipeline behavior only — not real patients.
+          * Synthetic profiles illustrate pipeline behavior only &bull; Zero real patient PHI.
         </p>
       </div>
 
@@ -309,7 +309,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
                     <label className="field-label" htmlFor={`field-${featName}`}>
                       <span className="field-name">{featName}</span>
                       <span className="field-bounds-hint">
-                        [{formatBound(numMeta.min)}–{formatBound(numMeta.max)}]
+                        [{formatBound(numMeta.min)} // {formatBound(numMeta.max)}]
                       </span>
                     </label>
                     <input
@@ -319,7 +319,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
                       min={numMeta.min}
                       max={numMeta.max}
                       className="field-input field-number"
-                      value={currentVal}
+                      value={typeof currentVal === 'number' && !Number.isInteger(currentVal) ? Number(currentVal.toFixed(2)) : currentVal}
                       placeholder={formatBound(numMeta.default)}
                       onChange={(e) => handleFieldChange(featName, e.target.value, 'numeric')}
                     />
@@ -328,10 +328,9 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
                     {/* Age cohort extrapolation warning (non-blocking) */}
                     {isAgeField && showAgeCohortWarning && (
                       <div className="age-cohort-warning" role="note">
-                        <AlertTriangle size={12} className="warning-icon" />
+                        <AlertTriangle size={13} className="warning-icon" />
                         <span>
-                          Age {ageVal} is outside the training cohort range (30–86 yrs). Predictions
-                          are extrapolated and should be interpreted with clinical caution.
+                          <strong>CAUTION // EXTRAPOLATION:</strong> Age {ageVal} is outside observed training cohort (30–86 yrs). Outputs are statistical extrapolations.
                         </span>
                       </div>
                     )}
@@ -349,12 +348,12 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
                   onClick={() => setActiveCategory(prevCategoryKey)}
                 >
                   <ChevronLeft size={13} />
-                  <span>{CATEGORY_MAP[prevCategoryKey].shortLabel}</span>
+                  <span>PREV: {CATEGORY_MAP[prevCategoryKey].shortLabel.toUpperCase()}</span>
                 </button>
               ) : <div />}
 
               <span className="category-step-counter">
-                {currentIndex + 1} of {CATEGORY_ORDER.length}
+                [ {currentIndex + 1} / {CATEGORY_ORDER.length} ]
               </span>
 
               {nextCategoryKey ? (
@@ -363,7 +362,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
                   className="btn-step-next"
                   onClick={() => setActiveCategory(nextCategoryKey)}
                 >
-                  <span>{CATEGORY_MAP[nextCategoryKey].shortLabel}</span>
+                  <span>NEXT: {CATEGORY_MAP[nextCategoryKey].shortLabel.toUpperCase()}</span>
                   <ChevronRight size={13} />
                 </button>
               ) : <div />}
@@ -375,11 +374,11 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
       {/* Global Validation Banner if any blocking errors exist */}
       {hasErrors && (
         <div className="form-validation-summary" role="alert">
-          <AlertCircle size={13} />
+          <AlertCircle size={14} />
           <span>
+            <strong>VAL.ERR // </strong>
             {Object.keys(validationErrors).length} field
-            {Object.keys(validationErrors).length > 1 ? 's' : ''} exceed valid range. Correct
-            highlighted values before running analysis.
+            {Object.keys(validationErrors).length > 1 ? 's' : ''} out of allowed clinical bounds.
           </span>
         </div>
       )}
@@ -394,7 +393,7 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
           title="Reset all fields to dataset defaults"
         >
           <RotateCcw size={13} />
-          <span>Reset</span>
+          <span>[ RESET ]</span>
         </button>
 
         <button
@@ -407,12 +406,12 @@ export const ClinicalForm: React.FC<ClinicalFormProps> = ({
           {isLoading ? (
             <>
               <span className="spinner-sm" />
-              <span>Analyzing…</span>
+              <span>COMPUTING INFERENCE…</span>
             </>
           ) : (
             <>
-              <Play size={14} fill="currentColor" />
-              <span>Run Analysis</span>
+              <Play size={13} fill="currentColor" />
+              <span>[ RUN MULTI-VESSEL ANALYSIS → ]</span>
             </>
           )}
         </button>

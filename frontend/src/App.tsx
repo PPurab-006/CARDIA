@@ -237,14 +237,58 @@ export const App: React.FC = () => {
         <div className="top-system-alert">
           <AlertTriangle size={15} />
           <span>
-            <strong>Backend Unreachable:</strong> Flask API is offline on{' '}
+            <strong>SYS.ERR // BACKEND UNREACHABLE:</strong> Flask API is offline on{' '}
             <code>localhost:5000</code>. Start with <code>python src/api/app.py</code>.
           </span>
           <button type="button" onClick={loadHealth} className="alert-retry-btn">
-            Retry
+            [ RETRY ]
           </button>
         </div>
       )}
+
+      {/* Hero / Research Overview Ribbon */}
+      <section className="research-hero-banner" aria-label="Research Overview">
+        <div className="hero-headline-block">
+          <div className="hero-kicker-row">
+            <span className="hero-kicker-tag">[ TRACK A // MULTIMODAL CARDIO ]</span>
+            <span className="hero-kicker-dot" />
+            <span className="hero-kicker-sub">3D ANATOMICAL RECONSTRUCTION &amp; MULTI-VESSEL STENOSIS</span>
+          </div>
+          <h1 className="hero-headline">
+            CARDIOVASCULAR AI DECISION SYSTEM
+          </h1>
+          <p className="hero-summary">
+            End-to-end multi-target clinical machine learning pipeline predicting overall CAD along with vessel-specific stenosis across LAD, LCX, and RCA branches from 54 multi-modal clinical covariates. Evaluated via stratified 5-fold cross-validation with zero target leakage on the Z-Alizadeh Sani cohort (n=303) and mapped onto interactive 3D human coronary anatomy.
+          </p>
+        </div>
+
+        <div className="hero-metadata-strip">
+          <div className="metadata-chip">
+            <span className="chip-key">DATASET:</span>
+            <span className="chip-val">UCI-411 (Z-Alizadeh Sani)</span>
+          </div>
+          <div className="metadata-chip">
+            <span className="chip-key">COHORT:</span>
+            <span className="chip-val">n=303 Patients</span>
+          </div>
+          <div className="metadata-chip">
+            <span className="chip-key">COVARIATES:</span>
+            <span className="chip-val">54 Multimodal</span>
+          </div>
+          <div className="metadata-chip">
+            <span className="chip-key">VALIDATION:</span>
+            <span className="chip-val">Stratified 5-Fold CV</span>
+          </div>
+          <div className="metadata-chip">
+            <span className="chip-key">TARGETS:</span>
+            <span className="chip-val">CAD &bull; LAD &bull; LCX &bull; RCA</span>
+          </div>
+          <div className="metadata-chip">
+            <span className="chip-key">3D ATLAS:</span>
+            <span className="chip-val">BodyParts3D (FMA7088)</span>
+          </div>
+        </div>
+      </section>
 
       {/* Mobile Section Navigator (hidden on desktop) */}
       <nav className="mobile-section-nav" aria-label="Section Navigation">
@@ -256,8 +300,8 @@ export const App: React.FC = () => {
             className={`mobile-nav-tab ${mobileSection === 'form' ? 'active' : ''}`}
             onClick={() => setMobileSection('form')}
           >
-            <ClipboardList size={13} />
-            Clinical Input
+            <ClipboardList size={12} />
+            <span>01 INPUT</span>
           </button>
           <button
             type="button"
@@ -266,8 +310,8 @@ export const App: React.FC = () => {
             className={`mobile-nav-tab ${mobileSection === 'heart' ? 'active' : ''}`}
             onClick={() => setMobileSection('heart')}
           >
-            <Activity size={13} />
-            3D Anatomy
+            <Activity size={12} />
+            <span>02 ATLAS</span>
           </button>
           <button
             type="button"
@@ -276,8 +320,8 @@ export const App: React.FC = () => {
             className={`mobile-nav-tab ${mobileSection === 'results' ? 'active' : ''}`}
             onClick={() => setMobileSection('results')}
           >
-            <BarChart3 size={13} />
-            Results
+            <BarChart3 size={12} />
+            <span>03 RESULTS</span>
             {prediction && !isStale && (
               <span className="mobile-result-dot" />
             )}
@@ -294,9 +338,12 @@ export const App: React.FC = () => {
         >
           <div className="col-panel-card">
             <div className="col-card-header">
-              <h2 className="col-card-title">Patient Clinical Features</h2>
+              <div className="col-card-title-group">
+                <span className="section-index-badge">01</span>
+                <h2 className="col-card-title">CLINICAL INPUT COVARIATES</h2>
+              </div>
               <span className="feature-count-pill">
-                {schema ? `${schema.feature_count} features` : 'Loading…'}
+                {schema ? `${schema.feature_count} FEATURES` : 'LOADING…'}
               </span>
             </div>
             <ClinicalForm
@@ -321,11 +368,11 @@ export const App: React.FC = () => {
         >
           <div className="col-panel-card heart-canvas-card">
             <div className="col-card-header heart-header">
-              <div className="title-with-pulse">
-                <span className="live-status-dot" />
-                <h2 className="col-card-title">Interactive Coronary Anatomy (3D)</h2>
+              <div className="col-card-title-group">
+                <span className="section-index-badge">02</span>
+                <h2 className="col-card-title">3D CORONARY ARBORIZATION</h2>
               </div>
-              <span className="canvas-hint">Drag · Scroll · Click vessel</span>
+              <span className="canvas-hint">DRAG &bull; SCROLL &bull; CLICK VESSEL</span>
             </div>
 
             <HeartViewer
@@ -352,9 +399,12 @@ export const App: React.FC = () => {
           {/* Risk Prediction Cards */}
           <div className="col-panel-card risk-card-panel">
             <div className="col-card-header">
-              <h2 className="col-card-title">Risk Predictions</h2>
+              <div className="col-card-title-group">
+                <span className="section-index-badge">03</span>
+                <h2 className="col-card-title">PREDICTION ENGINE</h2>
+              </div>
               {prediction && (
-                <span className="timestamp-pill">Analysis Computed</span>
+                <span className="timestamp-pill">INFERENCE READY</span>
               )}
             </div>
 
@@ -369,6 +419,12 @@ export const App: React.FC = () => {
 
           {/* Feature Explanations & Model Interpretability */}
           <div className="col-panel-card explanations-card-panel">
+            <div className="col-card-header">
+              <div className="col-card-title-group">
+                <span className="section-index-badge">04</span>
+                <h2 className="col-card-title">FEATURE ATTRIBUTION</h2>
+              </div>
+            </div>
             <FeatureExplanations
               prediction={prediction}
               loading={isPredicting}

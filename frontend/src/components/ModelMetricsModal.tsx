@@ -25,12 +25,12 @@ export const ModelMetricsModal: React.FC<ModelMetricsModalProps> = ({
         <div className="modal-header">
           <div className="modal-title-group">
             <div className="modal-icon-badge">
-              <Award size={20} className="text-cyan" />
+              <Award size={20} className="text-acid" />
             </div>
             <div>
-              <h3 className="modal-title">Model Performance & Evaluation Audit</h3>
+              <h3 className="modal-title">[ MODEL EVALUATION &amp; CV AUDIT ]</h3>
               <p className="modal-subtitle">
-                Stratified 5-Fold Cross-Validation Metrics (Z-Alizadeh Sani Cohort, n=303)
+                Stratified 5-Fold Cross-Validation Metrics &bull; Z-Alizadeh Sani Cohort (n=303)
               </p>
             </div>
           </div>
@@ -152,10 +152,10 @@ export const ModelMetricsModal: React.FC<ModelMetricsModalProps> = ({
 
         <div className="modal-footer">
           <span className="modal-footer-note">
-            CARDIA Milestone 3 ML System Audit &bull; Anti-Leakage Verified
+            CARDIA ML SYSTEM AUDIT &bull; ZERO TARGET LEAKAGE CONFIRMED
           </span>
           <button type="button" className="btn-secondary" onClick={onClose}>
-            Close
+            [ CLOSE AUDIT ]
           </button>
         </div>
       </div>
