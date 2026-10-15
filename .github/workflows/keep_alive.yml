@@ -1,0 +1,31 @@
+name: CARDIA Backend Keep-Alive Monitor
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render free-tier spin-down (inactivity threshold: 15 min)
+    - cron: '*/10 * * * *'
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  ping:
+    name: Ping Health Endpoint
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+
+    steps:
+      - name: Ping CARDIA Health Endpoint
+        run: |
+          HEALTH_URL="https://cardia-api-6gif.onrender.com/api/health"
+          echo "Pinging CARDIA API at $HEALTH_URL..."
+          HTTP_STATUS=$(curl -s -o /tmp/health_response.json -w "%{http_code}" -m 60 "$HEALTH_URL")
+          echo "HTTP Status: $HTTP_STATUS"
+          cat /tmp/health_response.json
+          echo ""
+
+          if [ "$HTTP_STATUS" -eq 200 ]; then
+            echo "CARDIA API is online and healthy."
+            exit 0
+          else
+            echo "Unexpected status $HTTP_STATUS from health check."
+            exit 1
+          fi

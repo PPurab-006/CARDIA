@@ -364,6 +364,12 @@ html, body {
   color: var(--risk-high);
 }
 
+.top-system-alert.waking-alert {
+  background: var(--risk-mod-bg);
+  color: var(--text-ink);
+  border-bottom: var(--border-thick);
+}
+
 .alert-retry-btn {
   background: var(--text-ink);
   color: #FFFFFF;

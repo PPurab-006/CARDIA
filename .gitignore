@@ -45,3 +45,7 @@ dist/
 # OS
 .DS_Store
 Thumbs.db
+
+# Demo raw video capture (large temporary files)
+demo/raw_capture/
+*.webm

@@ -6,9 +6,14 @@ import type {
   MetricsResponse
 } from '../types/api';
 
-const rawApiBase = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || '/api';
+const DEFAULT_PROD_API = 'https://cardia-api-6gif.onrender.com';
+const rawApiBase =
+  import.meta.env.VITE_API_BASE_URL ||
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? DEFAULT_PROD_API : '/api');
 const cleanBase = rawApiBase.replace(/\/+$/, '');
-const API_BASE = cleanBase.endsWith('/api') || cleanBase === '/api' ? cleanBase : `${cleanBase}/api`;
+export const API_BASE = cleanBase.endsWith('/api') || cleanBase === '/api' ? cleanBase : `${cleanBase}/api`;
+export const IS_CLOUD_BACKEND = !API_BASE.includes('localhost') && !API_BASE.startsWith('/api');
 
 export class ApiError extends Error {
   errorCode?: string;
@@ -35,28 +40,81 @@ async function handleResponse<T>(res: Response): Promise<T> {
   return data as T;
 }
 
-export async function checkHealth(): Promise<HealthResponse> {
+export async function checkHealth(timeoutMs?: number): Promise<HealthResponse> {
+  const timeout = timeoutMs ?? (IS_CLOUD_BACKEND ? 30000 : 8000);
   try {
-    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(4000) });
+    const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(timeout) });
     return await handleResponse<HealthResponse>(res);
   } catch (err: any) {
     if (err instanceof ApiError) throw err;
-    throw new ApiError('Unable to connect to cardiovascular prediction backend.', 'CONNECTION_REFUSED');
+    const isTimeout = err?.name === 'TimeoutError' || err?.message?.includes('timeout');
+    if (isTimeout && IS_CLOUD_BACKEND) {
+      throw new ApiError(
+        'Cloud backend is waking from sleep (cold start in progress).',
+        'COLD_START'
+      );
+    }
+    throw new ApiError(
+      IS_CLOUD_BACKEND
+        ? `Unable to connect to cloud backend at ${API_BASE}.`
+        : 'Unable to connect to cardiovascular prediction backend.',
+      'CONNECTION_REFUSED'
+    );
   }
 }
 
+export async function checkHealthWithRetry(
+  maxRetries = 2,
+  onStatusUpdate?: (status: string) => void
+): Promise<HealthResponse> {
+  let lastError: any;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      if (attempt > 1 && onStatusUpdate) {
+        onStatusUpdate(`Waking cloud backend (attempt ${attempt}/${maxRetries})...`);
+      }
+      const timeoutMs = IS_CLOUD_BACKEND ? (attempt === 1 ? 15000 : 45000) : 8000;
+      const res = await fetch(`${API_BASE}/health`, { signal: AbortSignal.timeout(timeoutMs) });
+      return await handleResponse<HealthResponse>(res);
+    } catch (err: any) {
+      lastError = err;
+      if (attempt < maxRetries) {
+        await new Promise((resolve) => setTimeout(resolve, 2500));
+      }
+    }
+  }
+
+  if (lastError instanceof ApiError) throw lastError;
+  const isTimeout = lastError?.name === 'TimeoutError' || lastError?.message?.includes('timeout');
+  if (isTimeout && IS_CLOUD_BACKEND) {
+    throw new ApiError(
+      'Cloud backend is taking longer than usual to spin up. Please click [ RETRY ] in a moment.',
+      'COLD_START'
+    );
+  }
+  throw new ApiError(
+    IS_CLOUD_BACKEND
+      ? `Unable to connect to cloud backend at ${API_BASE}.`
+      : 'Unable to connect to cardiovascular prediction backend.',
+    'CONNECTION_REFUSED'
+  );
+}
+
 export async function fetchSchema(): Promise<SchemaResponse> {
-  const res = await fetch(`${API_BASE}/schema`);
+  const timeout = IS_CLOUD_BACKEND ? 45000 : 15000;
+  const res = await fetch(`${API_BASE}/schema`, { signal: AbortSignal.timeout(timeout) });
   return await handleResponse<SchemaResponse>(res);
 }
 
 export async function fetchSamplePatients(): Promise<SamplePatientsResponse> {
-  const res = await fetch(`${API_BASE}/sample-patients`);
+  const timeout = IS_CLOUD_BACKEND ? 45000 : 15000;
+  const res = await fetch(`${API_BASE}/sample-patients`, { signal: AbortSignal.timeout(timeout) });
   return await handleResponse<SamplePatientsResponse>(res);
 }
 
 export async function fetchMetrics(): Promise<MetricsResponse> {
-  const res = await fetch(`${API_BASE}/metrics`);
+  const timeout = IS_CLOUD_BACKEND ? 45000 : 15000;
+  const res = await fetch(`${API_BASE}/metrics`, { signal: AbortSignal.timeout(timeout) });
   return await handleResponse<MetricsResponse>(res);
 }
 

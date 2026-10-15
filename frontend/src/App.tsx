@@ -8,11 +8,13 @@ import { FeatureExplanations } from './components/FeatureExplanations';
 import { ModelMetricsModal } from './components/ModelMetricsModal';
 import { SafetyDisclaimer } from './components/SafetyDisclaimer';
 import {
-  checkHealth,
+  checkHealthWithRetry,
   fetchSchema,
   fetchSamplePatients,
   fetchMetrics,
   predictRisk,
+  API_BASE,
+  IS_CLOUD_BACKEND,
   ApiError
 } from './lib/api';
 import type {
@@ -24,9 +26,36 @@ import type {
   PredictionResponse,
   FeatureNumericMeta
 } from './types/api';
-import { AlertTriangle, XCircle, ClipboardList, Activity, BarChart3 } from 'lucide-react';
+import {
+  AlertTriangle,
+  RefreshCw,
+  XCircle,
+  ClipboardList,
+  Activity,
+  BarChart3,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  ChevronUp
+} from 'lucide-react';
 
 type MobileSection = 'form' | 'heart' | 'results';
+
+// Session persistence helper for desktop collapsible panels
+const getStoredCollapse = (key: string, defaultValue: boolean): boolean => {
+  try {
+    const val = sessionStorage.getItem(`cardia_panel_${key}`);
+    return val !== null ? val === 'true' : defaultValue;
+  } catch {
+    return defaultValue;
+  }
+};
+
+const setStoredCollapse = (key: string, value: boolean) => {
+  try {
+    sessionStorage.setItem(`cardia_panel_${key}`, String(value));
+  } catch {}
+};
 
 export const App: React.FC = () => {
   // Backend & Metadata State
@@ -55,58 +84,97 @@ export const App: React.FC = () => {
   // 3D Vessel Interaction
   const [selectedVessel, setSelectedVessel] = useState<string | null>(null);
 
+  // Desktop Collapsible Panels State
+  const [isLeftCollapsed, setIsLeftCollapsed] = useState<boolean>(() =>
+    getStoredCollapse('left', false)
+  );
+  const [isRightCollapsed, setIsRightCollapsed] = useState<boolean>(() =>
+    getStoredCollapse('right', false)
+  );
+  const [isPredictionCollapsed, setIsPredictionCollapsed] = useState<boolean>(() =>
+    getStoredCollapse('prediction', false)
+  );
+  const [isAttributionCollapsed, setIsAttributionCollapsed] = useState<boolean>(() =>
+    getStoredCollapse('attribution', false)
+  );
+  const [isMetricsInlineCollapsed, setIsMetricsInlineCollapsed] = useState<boolean>(() =>
+    getStoredCollapse('metrics_inline', true)
+  );
+  const [isHeroCollapsed, setIsHeroCollapsed] = useState<boolean>(() =>
+    getStoredCollapse('hero', false)
+  );
+
+  // Desktop Breakpoint Detection (>= 1200px)
+  const [isDesktop, setIsDesktop] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth >= 1200 : true
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsDesktop(window.innerWidth >= 1200);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const showHeroCollapsed = isDesktop && isHeroCollapsed;
+  const showLeftCollapsed = isDesktop && isLeftCollapsed;
+  const showRightCollapsed = isDesktop && isRightCollapsed;
+  const showPredictionCollapsed = isDesktop && isPredictionCollapsed;
+  const showAttributionCollapsed = isDesktop && isAttributionCollapsed;
+  const showMetricsInlineCollapsed = isDesktop && isMetricsInlineCollapsed;
+
   // Mobile Section Navigation
   const [mobileSection, setMobileSection] = useState<MobileSection>('form');
 
-  // Initial Load: Health, Schema, Sample Patients, Metrics
-  const loadHealth = useCallback(async () => {
+  // Initial Load: Health, Schema, Sample Patients, Metrics with cold-start handling
+  const [wakeStatus, setWakeStatus] = useState<string | null>(null);
+
+  const loadInitialData = useCallback(async () => {
     setHealthLoading(true);
     setHealthError(null);
+    setWakeStatus(null);
+    setMetricsLoading(true);
+    setMetricsError(null);
     try {
-      const data = await checkHealth();
-      setHealth(data);
+      // Step 1: Health check with cold-start retries
+      const healthData = await checkHealthWithRetry(2, (status) => setWakeStatus(status));
+      setHealth(healthData);
+      setWakeStatus(null);
+
+      // Step 2: Once backend is online, fetch schema, sample patients, and metrics in parallel
+      const [schemaData, samplesData, metricsData] = await Promise.all([
+        fetchSchema(),
+        fetchSamplePatients(),
+        fetchMetrics()
+      ]);
+
+      setSchema(schemaData);
+      setSamplePatients(samplesData);
+      setMetrics(metricsData);
+      setMetricsLoading(false);
+
+      // Initialize default values from schema if not already set
+      setFormValues((prev) => {
+        if (Object.keys(prev).length > 0) return prev;
+        const initialForm: Record<string, any> = {};
+        Object.entries(schemaData.features).forEach(([key, meta]) => {
+          initialForm[key] = meta.default;
+        });
+        return initialForm;
+      });
     } catch (err: any) {
       setHealth(null);
       setHealthError(err.message || 'Backend connection failed');
+      setMetricsLoading(false);
+      setMetricsError(err.message || 'Failed to load metrics');
     } finally {
       setHealthLoading(false);
+      setWakeStatus(null);
     }
   }, []);
 
-  const loadInitialData = useCallback(async () => {
-    await loadHealth();
-
-    try {
-      const schemaData = await fetchSchema();
-      setSchema(schemaData);
-
-      // Initialize default values from schema
-      const initialForm: Record<string, any> = {};
-      Object.entries(schemaData.features).forEach(([key, meta]) => {
-        initialForm[key] = meta.default;
-      });
-      setFormValues(initialForm);
-    } catch (err: any) {
-      console.error('Failed to load schema:', err);
-    }
-
-    try {
-      const samplesData = await fetchSamplePatients();
-      setSamplePatients(samplesData);
-    } catch (err: any) {
-      console.error('Failed to load sample profiles:', err);
-    }
-
-    try {
-      setMetricsLoading(true);
-      const metricsData = await fetchMetrics();
-      setMetrics(metricsData);
-    } catch (err: any) {
-      setMetricsError(err.message || 'Failed to load metrics');
-    } finally {
-      setMetricsLoading(false);
-    }
-  }, [loadHealth]);
+  const loadHealth = loadInitialData;
 
   useEffect(() => {
     loadInitialData();
@@ -237,57 +305,110 @@ export const App: React.FC = () => {
         <div className="top-system-alert">
           <AlertTriangle size={15} />
           <span>
-            <strong>SYS.ERR // BACKEND UNREACHABLE:</strong> Flask API is offline on{' '}
-            <code>localhost:5000</code>. Start with <code>python src/api/app.py</code>.
+            <strong>SYS.ERR // BACKEND UNREACHABLE:</strong>{' '}
+            {IS_CLOUD_BACKEND ? (
+              <>
+                Cloud API is unreachable or waking from sleep at <code>{API_BASE}</code>.
+                Free-tier cloud containers sleep after inactivity.
+              </>
+            ) : (
+              <>
+                Flask API is offline on <code>localhost:5000</code>. Start with{' '}
+                <code>python src/api/app.py</code>.
+              </>
+            )}
           </span>
-          <button type="button" onClick={loadHealth} className="alert-retry-btn">
-            [ RETRY ]
+          <button
+            type="button"
+            onClick={loadInitialData}
+            disabled={healthLoading}
+            className="alert-retry-btn"
+          >
+            {healthLoading ? '[ CONNECTING... ]' : '[ RETRY ]'}
           </button>
         </div>
       )}
 
-      {/* Hero / Research Overview Ribbon */}
-      <section className="research-hero-banner" aria-label="Research Overview">
-        <div className="hero-headline-block">
+      {/* Cold Start Waking Progress Indicator */}
+      {healthLoading && wakeStatus && (
+        <div className="top-system-alert waking-alert">
+          <RefreshCw size={14} className="spin" />
+          <span>
+            <strong>SYS.STATUS // WAKING CLOUD BACKEND:</strong> {wakeStatus} Free-tier instances take ~30–45s to boot.
+          </span>
+        </div>
+      )}
+
+      {/* Hero / Research Overview Ribbon (Collapsible on Desktop) */}
+      <section
+        className={`research-hero-banner ${showHeroCollapsed ? 'is-collapsed' : ''}`}
+        aria-label="Research Overview"
+      >
+        <div className="hero-top-row">
           <div className="hero-kicker-row">
             <span className="hero-kicker-tag">[ TRACK A // MULTIMODAL CARDIO ]</span>
             <span className="hero-kicker-dot" />
             <span className="hero-kicker-sub">3D ANATOMICAL RECONSTRUCTION &amp; MULTI-VESSEL STENOSIS</span>
           </div>
-          <h1 className="hero-headline">
-            CARDIOVASCULAR AI DECISION SYSTEM
-          </h1>
-          <p className="hero-summary">
-            End-to-end multi-target clinical machine learning pipeline predicting overall CAD along with vessel-specific stenosis across LAD, LCX, and RCA branches from 54 multi-modal clinical covariates. Evaluated via stratified 5-fold cross-validation with zero target leakage on the Z-Alizadeh Sani cohort (n=303) and mapped onto interactive 3D human coronary anatomy.
-          </p>
+          <button
+            type="button"
+            className="panel-collapse-btn desktop-only"
+            onClick={() => {
+              const next = !isHeroCollapsed;
+              setIsHeroCollapsed(next);
+              setStoredCollapse('hero', next);
+            }}
+            aria-expanded={!showHeroCollapsed}
+            aria-controls="hero-content-body"
+            aria-label={showHeroCollapsed ? 'Expand research overview ribbon' : 'Collapse research overview ribbon'}
+            title={showHeroCollapsed ? 'Expand research overview ribbon' : 'Collapse research overview ribbon'}
+          >
+            {showHeroCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+          </button>
         </div>
 
-        <div className="hero-metadata-strip">
-          <div className="metadata-chip">
-            <span className="chip-key">DATASET:</span>
-            <span className="chip-val">UCI-411 (Z-Alizadeh Sani)</span>
+        {!showHeroCollapsed ? (
+          <div id="hero-content-body" className="hero-expanded-body">
+            <h1 className="hero-headline">CARDIOVASCULAR AI DECISION SYSTEM</h1>
+            <p className="hero-summary">
+              End-to-end multi-target clinical machine learning pipeline predicting overall CAD along with vessel-specific stenosis across LAD, LCX, and RCA branches from 54 multi-modal clinical covariates. Evaluated via stratified 5-fold cross-validation with zero target leakage on the Z-Alizadeh Sani cohort (n=303) and mapped onto interactive 3D human coronary anatomy.
+            </p>
+            <div className="hero-metadata-strip">
+              <div className="metadata-chip">
+                <span className="chip-key">DATASET:</span>
+                <span className="chip-val">UCI-411 (Z-Alizadeh Sani)</span>
+              </div>
+              <div className="metadata-chip">
+                <span className="chip-key">COHORT:</span>
+                <span className="chip-val">n=303 Patients</span>
+              </div>
+              <div className="metadata-chip">
+                <span className="chip-key">COVARIATES:</span>
+                <span className="chip-val">54 Multimodal</span>
+              </div>
+              <div className="metadata-chip">
+                <span className="chip-key">VALIDATION:</span>
+                <span className="chip-val">Stratified 5-Fold CV</span>
+              </div>
+              <div className="metadata-chip">
+                <span className="chip-key">TARGETS:</span>
+                <span className="chip-val">CAD &bull; LAD &bull; LCX &bull; RCA</span>
+              </div>
+              <div className="metadata-chip">
+                <span className="chip-key">3D ATLAS:</span>
+                <span className="chip-val">BodyParts3D (FMA7088)</span>
+              </div>
+            </div>
           </div>
-          <div className="metadata-chip">
-            <span className="chip-key">COHORT:</span>
-            <span className="chip-val">n=303 Patients</span>
+        ) : (
+          <div className="hero-compact-strip">
+            <span className="hero-compact-title">CARDIOVASCULAR AI DECISION SYSTEM</span>
+            <span className="hero-compact-sep">&bull;</span>
+            <span className="hero-compact-meta">
+              UCI-411 (n=303) &bull; 54 Covariates &bull; Stratified 5-Fold CV &bull; Zero Leakage Audited &bull; BodyParts3D
+            </span>
           </div>
-          <div className="metadata-chip">
-            <span className="chip-key">COVARIATES:</span>
-            <span className="chip-val">54 Multimodal</span>
-          </div>
-          <div className="metadata-chip">
-            <span className="chip-key">VALIDATION:</span>
-            <span className="chip-val">Stratified 5-Fold CV</span>
-          </div>
-          <div className="metadata-chip">
-            <span className="chip-key">TARGETS:</span>
-            <span className="chip-val">CAD &bull; LAD &bull; LCX &bull; RCA</span>
-          </div>
-          <div className="metadata-chip">
-            <span className="chip-key">3D ATLAS:</span>
-            <span className="chip-val">BodyParts3D (FMA7088)</span>
-          </div>
-        </div>
+        )}
       </section>
 
       {/* Mobile Section Navigator (hidden on desktop) */}
@@ -330,21 +451,91 @@ export const App: React.FC = () => {
       </nav>
 
       {/* Main 3-Column Workstation Layout */}
-      <main className="workstation-main-layout">
-        {/* Left Column: Clinical Form & Synthetic Patient Picker */}
+      <main
+        className={`workstation-main-layout ${showLeftCollapsed ? 'left-collapsed' : ''} ${showRightCollapsed ? 'right-collapsed' : ''}`}
+      >
+        {/* Left Column: Clinical Form & Synthetic Patient Picker (Collapsible on Desktop) */}
         <section
-          className={`workstation-col col-left ${mobileSection === 'form' ? 'mobile-active' : ''}`}
+          className={`workstation-col col-left ${showLeftCollapsed ? 'is-collapsed-col' : ''} ${mobileSection === 'form' ? 'mobile-active' : ''}`}
           aria-label="Clinical Input Features"
         >
-          <div className="col-panel-card">
+          {/* Collapsed Rail (Desktop Only) */}
+          <div
+            className="collapsed-vertical-rail desktop-only"
+            onClick={() => {
+              setIsLeftCollapsed(false);
+              setStoredCollapse('left', false);
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsLeftCollapsed(false);
+                setStoredCollapse('left', false);
+              }
+            }}
+            aria-label="Expand clinical input covariates panel"
+            title="Click to expand Clinical Input Covariates"
+          >
+            <div className="rail-top-action">
+              <button
+                type="button"
+                className="panel-collapse-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLeftCollapsed(false);
+                  setStoredCollapse('left', false);
+                }}
+                aria-expanded={false}
+                aria-controls="panel-content-01"
+                aria-label="Expand clinical input covariates panel"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+            <div className="rail-badge-wrap">
+              <span className="section-index-badge">01</span>
+            </div>
+            <span className="rail-vertical-text">CLINICAL INPUTS</span>
+            <div className="rail-bottom-meta">
+              <span className="rail-count-pill" title={`${schema?.feature_count || 54} features`}>
+                {schema ? `${schema.feature_count}F` : '54F'}
+              </span>
+              {selectedSampleId && (
+                <span className="rail-active-pill" title="Synthetic profile active">
+                  ACTIVE
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Full Clinical Form Card */}
+          <div id="panel-content-01" className="col-panel-card col-panel-full">
             <div className="col-card-header">
               <div className="col-card-title-group">
                 <span className="section-index-badge">01</span>
                 <h2 className="col-card-title">CLINICAL INPUT COVARIATES</h2>
               </div>
-              <span className="feature-count-pill">
-                {schema ? `${schema.feature_count} FEATURES` : 'LOADING…'}
-              </span>
+              <div className="header-actions-right">
+                <span className="feature-count-pill">
+                  {schema ? `${schema.feature_count} FEATURES` : 'LOADING…'}
+                </span>
+                <button
+                  type="button"
+                  className="panel-collapse-btn desktop-only"
+                  onClick={() => {
+                    setIsLeftCollapsed(true);
+                    setStoredCollapse('left', true);
+                  }}
+                  aria-expanded={true}
+                  aria-controls="panel-content-01"
+                  aria-label="Collapse clinical input panel"
+                  title="Collapse clinical input panel"
+                >
+                  <ChevronLeft size={14} />
+                </button>
+              </div>
             </div>
             <ClinicalForm
               schema={schema}
@@ -361,10 +552,10 @@ export const App: React.FC = () => {
           </div>
         </section>
 
-        {/* Center Column: 3D Heart Visualizer */}
+        {/* Center Column: 3D Heart Visualizer (PERMANENTLY EXPANDED & VISIBLE) */}
         <section
           className={`workstation-col col-center ${mobileSection === 'heart' ? 'mobile-active' : ''}`}
-          aria-label="Interactive 3D Heart"
+          aria-label="Interactive 3D Heart Visualizer"
         >
           <div className="col-panel-card heart-canvas-card">
             <div className="col-card-header heart-header">
@@ -384,51 +575,270 @@ export const App: React.FC = () => {
           </div>
         </section>
 
-        {/* Right Column: Risk Dashboard & Feature Explanations */}
+        {/* Right Column: Prediction Engine, Attribution & Audit (Collapsible on Desktop) */}
         <section
-          className={`workstation-col col-right ${mobileSection === 'results' ? 'mobile-active' : ''}`}
+          className={`workstation-col col-right ${showRightCollapsed ? 'is-collapsed-col' : ''} ${mobileSection === 'results' ? 'mobile-active' : ''}`}
           aria-label="Prediction Results and Explanations"
         >
-          {predictError && (
-            <div className="prediction-error-banner">
-              <XCircle size={16} />
-              <span>{predictError}</span>
+          {/* Collapsed Rail (Desktop Only) */}
+          <div
+            className="collapsed-vertical-rail desktop-only right-rail"
+            onClick={() => {
+              if (!isDesktop) return;
+              setIsRightCollapsed(false);
+              setStoredCollapse('right', false);
+            }}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setIsRightCollapsed(false);
+                setStoredCollapse('right', false);
+              }
+            }}
+            aria-label="Expand results, attribution and audit sidebar"
+            title="Click to expand Results & Audit Sidebar"
+          >
+            <div className="rail-top-action">
+              <button
+                type="button"
+                className="panel-collapse-btn"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsRightCollapsed(false);
+                  setStoredCollapse('right', false);
+                }}
+                aria-expanded={false}
+                aria-controls="panel-content-right"
+                aria-label="Expand right sidebar"
+              >
+                <ChevronLeft size={14} />
+              </button>
             </div>
-          )}
-
-          {/* Risk Prediction Cards */}
-          <div className="col-panel-card risk-card-panel">
-            <div className="col-card-header">
-              <div className="col-card-title-group">
-                <span className="section-index-badge">03</span>
-                <h2 className="col-card-title">PREDICTION ENGINE</h2>
-              </div>
-              {prediction && (
-                <span className="timestamp-pill">INFERENCE READY</span>
+            <div className="rail-badge-wrap">
+              <span className="section-index-badge">03-05</span>
+            </div>
+            <span className="rail-vertical-text">RESULTS &amp; AUDIT</span>
+            <div className="rail-bottom-meta">
+              {prediction ? (
+                <span
+                  className={`rail-count-pill ${prediction.predictions?.CAD?.risk_level === 'High' ? 'alert-pill' : ''}`}
+                  title={`CAD: ${((prediction.predictions?.CAD?.probability ?? 0) * 100).toFixed(1)}%`}
+                >
+                  {((prediction.predictions?.CAD?.probability ?? 0) * 100).toFixed(0)}%
+                </span>
+              ) : (
+                <span className="rail-count-pill" title="Awaiting inference">
+                  STANDBY
+                </span>
               )}
             </div>
-
-            <RiskDashboard
-              prediction={prediction}
-              loading={isPredicting}
-              selectedVessel={selectedVessel}
-              onSelectVessel={setSelectedVessel}
-              isStale={isStale}
-            />
           </div>
 
-          {/* Feature Explanations & Model Interpretability */}
-          <div className="col-panel-card explanations-card-panel">
-            <div className="col-card-header">
-              <div className="col-card-title-group">
-                <span className="section-index-badge">04</span>
-                <h2 className="col-card-title">FEATURE ATTRIBUTION</h2>
+          {/* Full Expanded Right Column Content */}
+          <div id="panel-content-right" className="col-panel-full col-right-stack">
+            {/* Desktop Dock Header for Collapsing Sidebar */}
+            <div className="col-dock-bar desktop-only">
+              <span className="col-dock-title">RESEARCH RESULTS &amp; AUDIT</span>
+              <button
+                type="button"
+                className="panel-collapse-btn"
+                onClick={() => {
+                  setIsRightCollapsed(true);
+                  setStoredCollapse('right', true);
+                }}
+                aria-expanded={true}
+                aria-label="Collapse right sidebar"
+                title="Collapse right sidebar into compact rail"
+              >
+                <ChevronRight size={14} />
+              </button>
+            </div>
+
+            {predictError && (
+              <div className="prediction-error-banner">
+                <XCircle size={16} />
+                <span>{predictError}</span>
+              </div>
+            )}
+
+            {/* Panel 03: Risk Prediction Cards */}
+            <div className={`col-panel-card risk-card-panel ${showPredictionCollapsed ? 'is-collapsed' : ''}`}>
+              <div
+                className="col-card-header header-interactive-toggle"
+                onClick={() => {
+                  if (!isDesktop) return;
+                  const next = !isPredictionCollapsed;
+                  setIsPredictionCollapsed(next);
+                  setStoredCollapse('prediction', next);
+                }}
+              >
+                <div className="col-card-title-group">
+                  <span className="section-index-badge">03</span>
+                  <h2 className="col-card-title">PREDICTION ENGINE</h2>
+                </div>
+                <div className="header-actions-right">
+                  {prediction ? (
+                    <span
+                      className={`summary-status-pill ${prediction.predictions?.CAD?.risk_level === 'High' ? 'highlight' : ''}`}
+                    >
+                      CAD: {((prediction.predictions?.CAD?.probability ?? 0) * 100).toFixed(1)}%
+                    </span>
+                  ) : (
+                    <span className="summary-status-pill muted">AWAITING</span>
+                  )}
+                  <button
+                    type="button"
+                    className="panel-collapse-btn desktop-only"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const next = !isPredictionCollapsed;
+                      setIsPredictionCollapsed(next);
+                      setStoredCollapse('prediction', next);
+                    }}
+                    aria-expanded={!showPredictionCollapsed}
+                    aria-controls="panel-content-03"
+                    aria-label={showPredictionCollapsed ? 'Expand prediction engine' : 'Collapse prediction engine'}
+                    title={showPredictionCollapsed ? 'Expand prediction engine' : 'Collapse prediction engine'}
+                  >
+                    {showPredictionCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              <div id="panel-content-03" className="panel-collapsible-body">
+                <RiskDashboard
+                  prediction={prediction}
+                  loading={isPredicting}
+                  selectedVessel={selectedVessel}
+                  onSelectVessel={setSelectedVessel}
+                  isStale={isStale}
+                />
               </div>
             </div>
-            <FeatureExplanations
-              prediction={prediction}
-              loading={isPredicting}
-            />
+
+            {/* Panel 04: Feature Explanations & Model Interpretability */}
+            <div className={`col-panel-card explanations-card-panel ${showAttributionCollapsed ? 'is-collapsed' : ''}`}>
+              <div
+                className="col-card-header header-interactive-toggle"
+                onClick={() => {
+                  if (!isDesktop) return;
+                  const next = !isAttributionCollapsed;
+                  setIsAttributionCollapsed(next);
+                  setStoredCollapse('attribution', next);
+                }}
+              >
+                <div className="col-card-title-group">
+                  <span className="section-index-badge">04</span>
+                  <h2 className="col-card-title">FEATURE ATTRIBUTION</h2>
+                </div>
+                <div className="header-actions-right">
+                  {prediction ? (
+                    <span className="summary-status-pill">
+                      TOP: {prediction.explanations?.CAD?.[0]?.feature || 'SHAP'}
+                    </span>
+                  ) : (
+                    <span className="summary-status-pill muted">STANDBY</span>
+                  )}
+                  <button
+                    type="button"
+                    className="panel-collapse-btn desktop-only"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const next = !isAttributionCollapsed;
+                      setIsAttributionCollapsed(next);
+                      setStoredCollapse('attribution', next);
+                    }}
+                    aria-expanded={!showAttributionCollapsed}
+                    aria-controls="panel-content-04"
+                    aria-label={showAttributionCollapsed ? 'Expand feature attribution' : 'Collapse feature attribution'}
+                    title={showAttributionCollapsed ? 'Expand feature attribution' : 'Collapse feature attribution'}
+                  >
+                    {showAttributionCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              <div id="panel-content-04" className="panel-collapsible-body">
+                <FeatureExplanations
+                  prediction={prediction}
+                  loading={isPredicting}
+                />
+              </div>
+            </div>
+
+            {/* Panel 05: Model Evaluation & CV Audit (Inline Collapsible) */}
+            <div className={`col-panel-card metrics-inline-panel ${showMetricsInlineCollapsed ? 'is-collapsed' : ''}`}>
+              <div
+                className="col-card-header header-interactive-toggle"
+                onClick={() => {
+                  if (!isDesktop) return;
+                  const next = !isMetricsInlineCollapsed;
+                  setIsMetricsInlineCollapsed(next);
+                  setStoredCollapse('metrics_inline', next);
+                }}
+              >
+                <div className="col-card-title-group">
+                  <span className="section-index-badge">05</span>
+                  <h2 className="col-card-title">MODEL EVALUATION &amp; CV AUDIT</h2>
+                </div>
+                <div className="header-actions-right">
+                  <span className="summary-status-pill">5-FOLD CV</span>
+                  <button
+                    type="button"
+                    className="panel-collapse-btn desktop-only"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const next = !isMetricsInlineCollapsed;
+                      setIsMetricsInlineCollapsed(next);
+                      setStoredCollapse('metrics_inline', next);
+                    }}
+                    aria-expanded={!showMetricsInlineCollapsed}
+                    aria-controls="panel-content-05"
+                    aria-label={showMetricsInlineCollapsed ? 'Expand model evaluation panel' : 'Collapse model evaluation panel'}
+                    title={showMetricsInlineCollapsed ? 'Expand model evaluation panel' : 'Collapse model evaluation panel'}
+                  >
+                    {showMetricsInlineCollapsed ? <ChevronDown size={14} /> : <ChevronUp size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              <div id="panel-content-05" className="panel-collapsible-body inline-metrics-body">
+                <div className="inline-metrics-summary-grid">
+                  <div className="inline-metric-item">
+                    <span className="metric-item-target">[CAD] OVERALL</span>
+                    <span className="metric-item-value">92.8% AUC</span>
+                    <span className="metric-item-algo">RandomForest</span>
+                  </div>
+                  <div className="inline-metric-item">
+                    <span className="metric-item-target">[LAD] ARTERY</span>
+                    <span className="metric-item-value">83.7% AUC</span>
+                    <span className="metric-item-algo">GradientBoosting</span>
+                  </div>
+                  <div className="inline-metric-item">
+                    <span className="metric-item-target">[LCX] ARTERY</span>
+                    <span className="metric-item-value">71.3% AUC</span>
+                    <span className="metric-item-algo">RandomForest</span>
+                  </div>
+                  <div className="inline-metric-item">
+                    <span className="metric-item-target">[RCA] ARTERY</span>
+                    <span className="metric-item-value">70.9% AUC</span>
+                    <span className="metric-item-algo">LogisticRegression</span>
+                  </div>
+                </div>
+                <div className="inline-metrics-footer">
+                  <span className="inline-audit-badge">ZERO TARGET LEAKAGE AUDITED (n=303)</span>
+                  <button
+                    type="button"
+                    className="btn-open-full-modal"
+                    onClick={() => setIsMetricsOpen(true)}
+                  >
+                    [ VIEW FULL AUDIT MODAL &rarr; ]
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
