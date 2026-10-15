@@ -280,6 +280,21 @@
   min-width: 0;
 }
 
+.col-panel-full {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+}
+
+.col-right-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  min-width: 0;
+}
+
 /* Column Heights & Layout on Desktop */
 .col-left .col-panel-card {
   height: calc(100vh - 260px);
@@ -682,10 +697,37 @@
 
   .col-panel-full {
     display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .col-right-stack {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  .col-right .col-panel-card {
+    display: flex !important;
+    flex-direction: column !important;
+    flex: none !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
   }
 
   .panel-collapsible-body {
     display: block !important;
+    flex: none !important;
+    min-height: 0 !important;
     max-height: none !important;
     overflow: visible !important;
   }
@@ -702,6 +744,8 @@
   .col-left.is-collapsed-col .col-panel-full,
   .col-right.is-collapsed-col .col-panel-full {
     display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
   }
 
   .workstation-main-layout.left-collapsed,
@@ -823,19 +867,34 @@
   .workstation-col {
     display: none;
     padding: 10px;
-    gap: 12px;
+    gap: 14px;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
   }
 
   .workstation-col.mobile-active {
     display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 
   .col-left .col-panel-card,
   .col-right .col-panel-card,
-  .col-right .explanations-card-panel {
-    height: auto;
-    max-height: none;
-    min-height: 0;
+  .col-right .explanations-card-panel,
+  .col-right .metrics-inline-panel {
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    width: 100% !important;
+  }
+
+  .col-card-header {
+    padding: 10px 12px;
+  }
+
+  .col-card-title {
+    font-size: 13px;
   }
 
   .heart-canvas-card {
@@ -863,12 +922,37 @@
 @media (max-width: 480px) {
   .workstation-col {
     padding: 8px;
-    gap: 10px;
+    gap: 12px;
+  }
+
+  .col-card-header {
+    padding: 8px 10px;
+  }
+
+  .col-card-title {
+    font-size: 12px;
+  }
+
+  .summary-status-pill {
+    font-size: 9px;
+    padding: 2px 5px;
   }
 
   .heart-canvas-card {
     height: 340px;
     min-height: 300px;
+  }
+
+  .risk-dashboard-container {
+    padding: 12px 10px;
+  }
+
+  .feature-explanations-card {
+    padding: 12px 10px;
+  }
+
+  .inline-metrics-body {
+    padding: 10px 10px;
   }
 }
 
